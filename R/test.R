@@ -1,15 +1,43 @@
-#' max number
+#' bicycleClass
 #' 
-#' Takes in numeric numbers and returns max
-#' @param x A numeric vector
-#' @return max value from input
+#' bicycleClass is used to calculate and classify an index for bicycle infrastructure based on a dataframe of 
+#' bicycle indicators. 
+#' 
+#' For instance, the example dataset in this package uses data from Scotland and compares
+#' it against Amsterdam. Unsuprisingly, Amsterdam provides the best infrastructre, the other Scottish
+#' areas are classified based on 5 quintiles on a normalised scale between 0-1 (Amsterdam = 1). 
+#' 
+#' This function is designed to work of value obtained from OpenStreetMap data. Specifically, it has been
+#' designed to use the bicyclePostGis function. This function returns a dataframe from an OpenStreetMap
+#' database with the arguments required for use with bicycleClass. Other data sources or
+#' supplementary data sources could be used as long as the dataframe is constructed correctly for this function. 
+#' There are four indicator ratios of bicycle infrastructure which are combined to give an overall classification.
+#' These are return in a dataframe: The ratio of cyclepath length to road length, ratio of National Cycle
+#' Network routes to roads length and the amount of bicycle parking per hectare. The is also a
+#' 'ruralness weighting' applied to account for less densely populated areas which arguably have quieter roads
+#' and require less cycle parking. The ruralness weighting is based on the relative amount of roads to area
+#' as a proxy for population density. See bicyclePostGis function for detailed breakdown of the OpenStreetMap
+#' data required for this function. 
+#' 
+#' Once all indicators are calculated they are given weights 4:2:1 for Cyclepath, National Cycle Route
+#' and Bicycle parking ratios respectively. This weigthting is based on expert opinion, bicycle literature
+#' (subjective). Further work at linking bicycle indicators on outcomes i.e. the % of the public travelling
+#' using bicycles is planned.
+#' 
+#' Each entry in the dataframe is also given a 'Confidence of Class'. In this context, it tries to measure
+#' the sampling effort (number of OpenStreetMap editors) and the time of last edit to represent uncertainty in the 
+#' in the quality of the OpenStreetMap data.  
+#' @usage bicycleClass(name, cyclepath, road, bicycleparking, area, editors, lasteditdate)
+#' @param name character 
+#' @param cyclepath length in km
+#' @param road length in km
+#' @param bicycleparking count of parking points
+#' @param area hectares
+#' @param editors total number editors of bicycle parking (optional)
+#' @param lasteditdate Date of last edit of bicycleparking points (optional)
+#' @return dataframe 
 #' @export
-#' @aliases max,biggestnumber
-
-test <- function(x){
-  
-  max(x)
-}
+#' @seealso bicyclePostGis
 
 
 #d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
