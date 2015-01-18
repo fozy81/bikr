@@ -1,11 +1,11 @@
-Package: mypackage
+Package: bikr
 Type: Package
-Title: max value
-Version: 1.0
-Date: 2015-01-15
-Author: Tim
-Maintainer: Tim <fault@somewhere.net>
-Description: Quick test package to start with
+Title: Bicycle infrastructure classification
+Version: 0.1
+Date: 2015-01-18
+Author: Tim Foster
+Maintainer: Tim Foster <fozy81@github.com>
+Description: This package provides a set of functions to query OpenStreetMap data for a selection of bicycle infrastruture indicators and to relatively classify, set objectives, quantify corrective measures and in future model outcomes.
 License: MIT
 Suggests: knitr
 VignetteBuilder: knitr
