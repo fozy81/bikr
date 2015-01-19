@@ -19,6 +19,24 @@
  #                password=password, dbname=dbname, host=host)
 
 
+#### order columns required for bicycleStatus function:
+# library(jsonlite)
+# d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
+# d2 <- d[,c(5,7:8,10:17)]
+# 1. name
+# 2. cyclepath
+# 3. road
+# 4. bicycleparking
+# 5. area
+# 6. routes
+# 7. proposedroutes
+# 8. proposedcyclepath, 
+# 9. constructioncyclepath
+# 10 editors
+# 11.lasteditdate
+
+
+
 #### function
 
 bicycleData <- function(user=user,
