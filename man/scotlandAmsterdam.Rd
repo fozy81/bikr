@@ -21,10 +21,12 @@
 
 For further details, see \url{http://www.openstreetmap.org}}
 \usage{
-scotlandAmsterdam
+bicycleStatus(scotlandAmsterdam)
 }
 \description{
-Summary of OpenStreetMap data prepared for to be processed by bicycleStatus
+Summary of OpenStreetMap data prepared by bicycleClass script which can be found
+in data-raw folder of this package. This summary data can be processed by
+by \pkg{bicycleStatus} function.
 }
 \keyword{datasets}
 

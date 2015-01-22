@@ -1,43 +1,14 @@
 library(leaflet)
 library(jsonlite)
 library(rCharts)
-
+library(bikr)
 library(ggplot2)
 
-d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
+d <- bicycleStatus(scotlandAmsterdam)
 
-bicycleClass <- function(x){
-  
-  x$'Road Vs cycle path' <-   round(x$features.properties.off_road_cycleway / x$features.properties.highways,digits=3)
-  x$'Bicycle parking to area' <- round(x$features.properties.bicycle_parking / x$features.properties.area,digits=10)
-  x$'Ruralness weighting' <- round(x$features.properties.area / x$features.properties.highways,digits=4) / 3000 
-  x$'NCN Vs highway' <- round(x$features.properties.ncn / x$features.properties.highways, digits=3)
-  x$'BQR total' <-   round(x$'Road Vs cycle path' +  x$'NCN Vs highway' +  x$'Bicycle parking to area' + x$'Ruralness weighting', digits=2)
-  x$'BQR normalised' <- round(x$'BQR total' / max(x$'BQR total'),digits=2)
-  x$'Status' <- ifelse(x$'BQR normalised' <= 0.8, "Good", "High")
-  x$'Status' <- ifelse(x$'BQR normalised' <= 0.6, "Moderate", x$'Status')
-  x$'Status' <- ifelse(x$'BQR normalised' <= 0.4, "Poor",  x$'Status')
-  x$'Status' <- ifelse(x$'BQR normalised' <= 0.2, "Bad",   x$'Status')
-  return(x)
-}
+fileName <- 'scotlandAmsterdam.json'
 
-d$'Bicycle parking points' <- d$features.properties.bicycle_parking
-d$'Name' <- d$features.properties.name
-d <- bicycleClass(d)
-
-CoC <- function(x){
-  
-  x$'Confidence of class' <- (x$features.properties.editors + as.numeric(substr(x$features.properties.edit_date,1,4))) - 2010
-  x$'Confidence of class' <- (round(x$'Confidence of class' / max(x$'Confidence of class'),digits=2) * 100) + 40 #mhmm the smell of fudge
-  x$'Confidence of class' <- ifelse(x$'Confidence of class' > 100,paste("100%"), paste(x$'Confidence of class',"%",sep=""))
-  return(x)
-} 
-
-d <- CoC(d)
-
-fileName <- '/home/tim/github/cycle-map-stats/Rscript/summary.json'
-
-seattle_geojson <- readChar(fileName, file.info(fileName)$size)
+geojsonFile <- readChar(fileName, file.info(fileName)$size)
 
 
 shinyServer(function(input, output, session) {
@@ -45,7 +16,7 @@ shinyServer(function(input, output, session) {
   map <- createLeafletMap(session, "map")
   
   session$onFlushed(once=TRUE, function() {
-    map$addGeoJSON(seattle_geojson)
+    map$addGeoJSON(geojsonFile)
                    
   })
   
@@ -86,7 +57,7 @@ shinyServer(function(input, output, session) {
       tags$div(
         "Region:",
         values$selectedFeature$name,hr(),
-        "Bicycle path:",d$features.properties.status[d$features.properties.name == values$selectedFeature$name]
+        "Bicycle path:",d$status[d[,1] == values$selectedFeature$name]
        
       )
     ))
@@ -95,7 +66,7 @@ shinyServer(function(input, output, session) {
   
   output$table <- renderDataTable({
   
-    data <- data.frame(cbind(names(d[c(28,25:27,29)]), t(d[d$'Name' == values$selectedFeature$name,c(28,25:27,29)])))
+    data <- data.frame(cbind(names(d[c(20,21,22)]), t(d[d[,1] == values$selectedFeature$name,c(20,21,22)])))
     data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
   },options = list(searching = FALSE,paging = FALSE))
@@ -117,10 +88,10 @@ shinyServer(function(input, output, session) {
 #   })
 
   output$chart2 <- renderPlot({
-    d <- d[d$'Name' == values$selectedFeature$name | d$'Name' == 'Stadsregio Amsterdam', ]
+    d <- d[d[,1] == values$selectedFeature$name | d[,1] == 'Stadsregio Amsterdam', ]
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
-    p2 <-  qplot(x = d$'Name',  y = d$'BQR normalised', geom="bar",stat="identity",fill=d$'Name'))
+    p2 <-  qplot(x = d[,1],  y = d[,20], geom="bar",stat="identity",fill=d[,1]))
    
     return(p2)
     

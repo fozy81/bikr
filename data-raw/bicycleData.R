@@ -50,68 +50,11 @@ bicycleData <- function(user=user,
 
 ######## drop all tables
 
-dbSendQuery(con, paste("drop table shop_scotland_area, bicycle_parking, shop_scotland_poly, shops, shops_point"))
+dbSendQuery(con, paste("DROP TABLE IF EXISTS table bicycle_parking"))
 
 ##### cycle parking
 
 dbSendQuery(con,paste("create table bicycle_parking as select * from planet_osm_point where planet_osm_point.amenity = 'bicycle_parking'"))
-
-#### amenity/shop points
-
-dbSendQuery(con,paste("create table shop_scotland_area as 
-select
-planet_osm_point.shop, planet_osm_point.amenity, planet_osm_point.name, planet_osm_point.\"addr:housename\",
-planet_osm_point.capacity, ST_Buffer(planet_osm_point.way, 50) as way, planet_osm_point.osm_id
-from
- planet_osm_point
-where
-planet_osm_point.shop IS NOT NULL
-OR planet_osm_point.amenity in ('cafe','restaurant','pub')"))
-
-
-dbSendQuery(con,paste("UPDATE shop_scotland_area SET capacity = (SELECT count(*)
-FROM cycle_parking_scotland WHERE ST_Intersects(cycle_parking_scotland.way, shop_scotland_area.way));
-                                        "))
-
-##### ways / polygon shops amenities #####
-
-# dbSendQuery(con, paste("drop table shop_scotland_poly"))
-
-
-dbSendQuery(con,paste("create table shop_scotland_poly as 
-select
-planet_osm_polygon.shop, planet_osm_polygon.amenity, planet_osm_polygon.name, planet_osm_polygon.\"addr:housename\", 
-planet_osm_polygon.osm_version  as capacity, ST_Buffer(planet_osm_polygon.way,30) as way, planet_osm_polygon.osm_id
-from
- planet_osm_polygon
-where
-planet_osm_polygon.shop IS NOT NULL
-OR planet_osm_polygon.amenity in ('cafe','restaurant','pub')"))
-
-dbSendQuery(con,paste("UPDATE shop_scotland_poly SET capacity = (SELECT count(*)
-FROM cycle_parking_scotland WHERE ST_Intersects(cycle_parking_scotland.way, shop_scotland_poly.way));
-                                        "))
-### union area and polygon shops ####
-
-dbSendQuery(con,paste("create table shops as select shop, amenity,name, \"addr:housename\", capacity, way, osm_id
-from shop_scotland_poly
-      union all 
-select shop, amenity, name, \"addr:housename\", capacity, way, osm_id 
-    from shop_scotland_area"))
-
-# dbSendQuery(con, paste("drop table shops_point"))
-dbSendQuery(con,paste("create table shops_point as select shop, amenity,name, \"addr:housename\", 
-capacity, ST_Centroid(way) as way, osm_id
-from shops"))
-
-dbSendQuery(con,paste("ALTER table shops_point ALTER COLUMN way TYPE geometry(Point, 4326) 
-USING ST_Transform(ST_SetSRID(shops_point.way,900913), 4326)"))
-
-#### export and sace to dropbox ####
- 
-  system(paste("rm /home/tim/Dropbox/Public/cyclemap/shops.json"))      
- command <- paste("ogr2ogr -f GeoJSON /home/tim/Dropbox/Public/cyclemap/shops.json PG:\"host=localhost dbname=gis2 user=tim password=gladstone port=5432\"  shops_point -lco COORDINATE_PRECISION=4",sep="")
-system(command)
 
 #### Areas update ####
 
@@ -137,8 +80,6 @@ FROM
 WHERE ST_Contains(merged.way,r.way)
 )"))
 
-
-# dbSendQuery(con,paste("UPDATE merged SET edit_date = 0 WHERE edit_date IS NULL"))
 
 # editors
 

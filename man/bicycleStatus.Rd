@@ -3,7 +3,7 @@
 \name{bicycleStatus}
 \alias{bicycleStatus}
 \title{bicycleStatus}
-\format{A data frame with 11 variables:
+\format{A data frame with 11 variables in this column order:
 \describe{
 \item{\code{name}}{name or unique id of area}
 \item{\code{cyclepath}}{length in km of cyclepaths}
@@ -26,7 +26,7 @@ bicycleStatus(x)
 \item{effort}{Estimate sampling effort to assess confidence in data quality
 (default=TRUE)}
 
-\item{amsterdam}{Calculate status relative to data for Amsterdam included in
+\item{amsterdamIndex}{Calculate status relative to data for Amsterdam included in
 package (default=FALSE)}
 
 \item{objectives}{Calculate required improvements based on objective year and
@@ -74,9 +74,9 @@ status claculated for an area is based to some degree on the weighting given
 to each indicator. The approach is to iterate the classification system to
 include to closely align the status to socio-ecomonic-enviromental outcomes.
 
-Each entry in the dataframe is also given a 'Confidence of Class'. In this
+Each entry in the dataframe is also given a 'Confidence'. In this
 context, it tries to measure the sampling effort (number of OpenStreetMap
-editors) and the time of last edit to represent uncertainty in the in the
+editors) and the time of last edit to represent uncertainty in the
 quality of the OpenStreetMap data. However, the current method is a fudge but
 produce figures that appear roughly feasible. Further empirical testing
 required to make this robust.
