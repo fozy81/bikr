@@ -9,5 +9,4 @@ bicycleTarget <- function(x,completion){
   year <- format(date, "%Y")
   
   
-  
 }

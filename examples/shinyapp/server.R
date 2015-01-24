@@ -1,6 +1,6 @@
 library(leaflet)
-library(jsonlite)
-#library(rCharts)
+#library(jsonlite)
+library(RJSONIO)
 library(bikr)
 library(ggplot2)
 
@@ -16,7 +16,7 @@ d$fillcolor <- ifelse(d$status == "Bad","#bd0026",d$fillcolor)
 #fileName <- fromJSON'scotlandAmsterdam.json'
 #geojsonFile <- readChar(fileName, file.info(fileName)$size)
 
-library(RJSONIO)
+
 geojsonFile <- RJSONIO::fromJSON('scotlandAmsterdam.json')
 
 shinyServer(function(input, output, session) {
@@ -25,19 +25,15 @@ shinyServer(function(input, output, session) {
   
   session$onFlushed(once=TRUE, function() {
   
-    for (i in 1:74){
-      
-        
+    for (i in 1:length(d[,1])){
+          
       geojsonFile$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
                                  fill = "true", opacity = 1,
                                 fillOpacity = 0.4, color= paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]),
                                 fillColor = paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]))
     }
-    
     map$addGeoJSON(geojsonFile)
-        
-    
-  })
+    })
   
   
   values <- reactiveValues(selectedFeature = NULL)
@@ -110,9 +106,9 @@ shinyServer(function(input, output, session) {
     d <- d[d[,1] == values$selectedFeature$name | d[,1] == 'Stadsregio Amsterdam', ]
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
-    p2 <-  qplot(x = d[,1],  y = d[,20], geom="bar",stat="identity",fill=d[,1]))
-   
-    return(p2)
+    p <-  qplot(x = d[,1],  y = d[,20], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
+    p <- p + scale_fill_manual(values= sort(d[,23],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
+    return(p)
     
   })
 
