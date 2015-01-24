@@ -1,23 +1,42 @@
 library(leaflet)
 library(jsonlite)
-library(rCharts)
+#library(rCharts)
 library(bikr)
 library(ggplot2)
 
 d <- bicycleStatus(scotlandAmsterdam)
+d$fillcolor <- ifelse(d$status == "High","#ffffb2","")
+d$fillcolor <- ifelse(d$status == "Good","#fecc5c",d$fillcolor)
+d$fillcolor <- ifelse(d$status == "Moderate","#fd8d3c",d$fillcolor)
+d$fillcolor <- ifelse(d$status == "Poor","#f03b20",d$fillcolor)
+d$fillcolor <- ifelse(d$status == "Bad","#bd0026",d$fillcolor)
 
-fileName <- 'scotlandAmsterdam.json'
+#d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
+#geojsonFile <- fromJSON('examples/shinyapp/scotlandAmsterdam.json')
+#fileName <- fromJSON'scotlandAmsterdam.json'
+#geojsonFile <- readChar(fileName, file.info(fileName)$size)
 
-geojsonFile <- readChar(fileName, file.info(fileName)$size)
-
+library(RJSONIO)
+geojsonFile <- RJSONIO::fromJSON('scotlandAmsterdam.json')
 
 shinyServer(function(input, output, session) {
   
   map <- createLeafletMap(session, "map")
   
   session$onFlushed(once=TRUE, function() {
+  
+    for (i in 1:74){
+      
+        
+      geojsonFile$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
+                                 fill = "true", opacity = 1,
+                                fillOpacity = 0.4, color= paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]),
+                                fillColor = paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]))
+    }
+    
     map$addGeoJSON(geojsonFile)
-                   
+        
+    
   })
   
   

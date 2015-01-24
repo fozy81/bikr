@@ -48,16 +48,13 @@ bicycleData <- function(user=user,
   con <- dbConnect(dbDriver("PostgreSQL"), user=user,
                    password=password, dbname=dbname, host=host)
 
-######## drop all tables
-
-dbSendQuery(con, paste("DROP TABLE IF EXISTS table bicycle_parking"))
+##### drop all tables if exists
+dbSendQuery(con, paste("DROP TABLE IF EXISTS table shop_scotland_area, bicycle_parking, shop_scotland_poly, shops, shops_point"))
 
 ##### cycle parking
-
 dbSendQuery(con,paste("create table bicycle_parking as select * from planet_osm_point where planet_osm_point.amenity = 'bicycle_parking'"))
 
 #### Areas update ####
-
 #dbSendQuery(con,paste("alter table merged drop column edit_date"))
 # dbSendQuery(con,paste("alter table merged add column edit_date DATE"))
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN editors NUMERIC"))
@@ -73,6 +70,8 @@ dbSendQuery(con,paste("create table bicycle_parking as select * from planet_osm_
 
 # edit_date
 
+
+
 dbSendQuery(con,paste("UPDATE merged SET edit_date = (SELECT 
                         max(osm_timestamp)
 FROM 
@@ -80,6 +79,8 @@ FROM
 WHERE ST_Contains(merged.way,r.way)
 )"))
 
+
+# dbSendQuery(con,paste("UPDATE merged SET edit_date = 0 WHERE edit_date IS NULL"))
 
 # editors
 
