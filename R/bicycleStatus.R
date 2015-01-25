@@ -85,47 +85,56 @@
 # 10 editors
 # 11.lasteditdate
 
-
 bicycleStatus <- function(x){
   # load in reference data from bikr package data 
   data(scotlandAmsterdam)
   scotlandAmsterdam
-  #  x <-    scotlandAmsterdam for testing
+  #  x <- scotlandAmsterdam for testing
   # merge data from Amsterdam with incoming data.frame so Amsterdam Index can be calculated   
   x <- rbind(x, scotlandAmsterdam[scotlandAmsterdam[,1] == 'Stadsregio Amsterdam',])
   maxrow <- length(x[,1])
-  # cyclepath ratio  
-  x$'cyclepath to road ratio' <-   round(x[,2] / x[,3] ,digits=3)
   
-  #normalised cyclepath ratio * 4 weighting  
+  #normalised cyclepath ratioweighting * 4
+  x$'cyclepath to road ratio' <-   round(x[,2] / x[,3] ,digits=3)  
   x$'cyclepath to road ratio norm' <- round(x$'cyclepath to road ratio' / x[maxrow,12],digits=3)
-  x$'cyclepath to road ratio norm' <- ifelse(x$'cyclepath to road ratio norm'> 1,1,x$'cyclepath to road ratio norm') * 4
+  x$'cyclepath to road ratio norm' <- ifelse(x$'cyclepath to road ratio norm'> 1,1,x$'cyclepath to road ratio norm') 
+  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.8, "Good", "High")
+  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.6, "Moderate",  x$'Cycle path status')
+  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.4, "Poor",   x$'Cycle path status')
+  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.2, "Bad",   x$'Cycle path status')
+  x$'cyclepath to road ratio norm weighted' <- x$'cyclepath to road ratio norm' * 4
   
-  # cycleparking  
+  # normalised cycleparking   
   x$'area to bicycle parking ratio' <- round(x[,4] / x[,5],digits=6) 
-  
-  # normalised cycleparking  
-  x$'area to bicycle parking ratio norm' <- round(x$'area to bicycle parking ratio' / x[maxrow,14],digits=2)
+  x$'area to bicycle parking ratio norm' <- round(x$'area to bicycle parking ratio' / x[maxrow,16],digits=2)
   x$'area to bicycle parking ratio norm' <-  ifelse( x$'area to bicycle parking ratio norm' > 1,1, x$'area to bicycle parking ratio norm')
+  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.8, "Good", "High")
+  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.6, "Moderate",  x$'Bicycle parking status')
+  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.4, "Poor",  x$'Bicycle parking status')
+  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.2, "Bad",    x$'Bicycle parking status')
+  
   # rural weighting * 2
   x$'rural weighting' <- round(round(x[,5] / x[,3],digits=4) / 3000, digits=6) * 2
   
-  # route to road ratio  
+  # route to road ratio  weighting * 2
   x$'cycle route to road ratio' <- round(x[,6] / x[,3], digits=3) 
+  x$'cycle route to road ratio norm' <- round(x$'cycle route to road ratio' / x[maxrow,20],digits=2)
+  x$'cycle route to road ratio norm' <-  ifelse( x$'cycle route to road ratio norm' >1 ,1, x$'cycle route to road ratio norm')  
+  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.8, "Good", "High")
+  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.6, "Moderate",  x$'National cycle network status')
+  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.4, "Poor",  x$'National cycle network status')
+  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.2, "Bad",    x$'National cycle network status')
+  x$'cycle route to road ratio norm weighted' <- x$'cycle route to road ratio norm'  * 2 # weighting
   
-  # route normalised * 2 weighting  
-  x$'cycle route to road ratio norm' <- round(x$'cycle route to road ratio' / x[maxrow,17],digits=2)
-  x$'cycle route to road ratio norm' <-  ifelse( x$'cycle route to road ratio norm' >1 ,1, x$'cycle route to road ratio norm')   * 2
-
   # 4:2:1 weighting combined for Overall  
-  x$'indicator total' <-   round(x$'cyclepath to road ratio norm' +  x$'cycle route to road ratio norm' +  x$'area to bicycle parking ratio norm' + x$'rural weighting', digits=2)
-  x$'total normalised' <- round(x$'indicator total' / x[maxrow,19],digits=2)
+  x$'Indicator total' <-   round(x$'cyclepath to road ratio norm weighted' +  x$'cycle route to road ratio norm weighted' +  x$'area to bicycle parking ratio norm' + x$'rural weighting', digits=2)
+  x$'Total normalised' <- round(x$'Indicator total' / x[maxrow,24],digits=2)
   
   # Quintiles for status  
-  x$'status' <- ifelse(x$'total normalised' <= 0.8, "Good", "High")
-  x$'status' <- ifelse(x$'total normalised' <= 0.6, "Moderate", x$'status')
-  x$'status' <- ifelse(x$'total normalised' <= 0.4, "Poor",  x$'status')
-  x$'status' <- ifelse(x$'total normalised' <= 0.2, "Bad",   x$'status')
+  x$'Status' <- ifelse(x$'Total normalised' <= 0.8, "Good", "High")
+  x$'Status' <- ifelse(x$'Total normalised' <= 0.6, "Moderate", x$'Status')
+  x$'Status' <- ifelse(x$'Total normalised' <= 0.4, "Poor",  x$'Status')
+  x$'Status' <- ifelse(x$'Total normalised' <= 0.2, "Bad",   x$'Status')
   
   # Confidence needs reworking/refactoring e.g. add an area size biase instead of this fudge:  
   x$'Confidence' <- (x[,10] + as.numeric(substr(x[,11],1,4))) - 2010 
@@ -133,7 +142,12 @@ bicycleStatus <- function(x){
   x$'Confidence' <- ifelse(x$'Confidence' > 100,paste("100%"), paste(x$'Confidence',"%",sep="")) 
 
   x  <-  x[1:maxrow-1,] # remove Amsterdam from dataframe before returning?? not sure if necessary
-  return(x)
+  
+  # rank results  
+  x <-  x[with(x, order(x$'Total normalised',decreasing = T )), ]
+  x$'Rank' <- 1:length(x[,1])
+   
+  return(x[,c(1,12:28)])
 }
 
 

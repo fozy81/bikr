@@ -5,17 +5,16 @@ library(bikr)
 library(ggplot2)
 
 d <- bicycleStatus(scotlandAmsterdam)
-d$fillcolor <- ifelse(d$status == "High","#ffffb2","")
-d$fillcolor <- ifelse(d$status == "Good","#fecc5c",d$fillcolor)
-d$fillcolor <- ifelse(d$status == "Moderate","#fd8d3c",d$fillcolor)
-d$fillcolor <- ifelse(d$status == "Poor","#f03b20",d$fillcolor)
-d$fillcolor <- ifelse(d$status == "Bad","#bd0026",d$fillcolor)
+d$fillcolor <- ifelse(d[,16] == "High","#ffffb2","")
+d$fillcolor <- ifelse(d[,16] == "Good","#fecc5c",d$fillcolor)
+d$fillcolor <- ifelse(d[,16] == "Moderate","#fd8d3c",d$fillcolor)
+d$fillcolor <- ifelse(d[,16] == "Poor","#f03b20",d$fillcolor)
+d$fillcolor <- ifelse(d[,16] == "Bad","#bd0026",d$fillcolor)
 
 #d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
 #geojsonFile <- fromJSON('examples/shinyapp/scotlandAmsterdam.json')
 #fileName <- fromJSON'scotlandAmsterdam.json'
 #geojsonFile <- readChar(fileName, file.info(fileName)$size)
-
 
 geojsonFile <- RJSONIO::fromJSON('scotlandAmsterdam.json')
 
@@ -28,8 +27,8 @@ shinyServer(function(input, output, session) {
     for (i in 1:length(d[,1])){
           
       geojsonFile$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
-                                 fill = "true", opacity = 1,
-                                fillOpacity = 0.4, color= paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]),
+                                 fill = "true", opacity = 0.9,
+                                fillOpacity = 0.9, color= paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]),
                                 fillColor = paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]))
     }
     map$addGeoJSON(geojsonFile)
@@ -69,10 +68,8 @@ shinyServer(function(input, output, session) {
     
     as.character(tags$div(
       tags$h3(values$selectedFeature$name),
-      tags$div(
-        "Region:",
-        values$selectedFeature$name,hr(),
-        "Bicycle path:",d$status[d[,1] == values$selectedFeature$name]
+      tags$h3(
+        "Rank:",paste(d$Rank[d[,1] == values$selectedFeature$name]," out of ",length(d[,1]))
        
       )
     ))
@@ -81,7 +78,7 @@ shinyServer(function(input, output, session) {
   
   output$table <- renderDataTable({
   
-    data <- data.frame(cbind(names(d[c(20,21,22)]), t(d[d[,1] == values$selectedFeature$name,c(20,21,22)])))
+    data <- data.frame(cbind(names(d[c(4,8,12,15,16,17,18)]), t(d[d[,1] == values$selectedFeature$name,c(4,8,12,15,16,17,18)])))
     data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
   },options = list(searching = FALSE,paging = FALSE))
@@ -106,14 +103,30 @@ shinyServer(function(input, output, session) {
     d <- d[d[,1] == values$selectedFeature$name | d[,1] == 'Stadsregio Amsterdam', ]
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
-    p <-  qplot(x = d[,1],  y = d[,20], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
-    p <- p + scale_fill_manual(values= sort(d[,23],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
+    p <-  qplot(x = d[,1],  y = d[,15], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
+    p <- p + scale_fill_manual(values= sort(d[,19],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
     return(p)
     
   })
 
+ output$table2 <- renderDataTable({
+
+   e <- bicycleStatus(scotlandAmsterdam)
+data <- bicycleTarget(summary=scotlandAmsterdam,status=e,completion=input$num)
+
+data
+
+ },options = list(searching = FALSE,paging = FALSE))
+
+
+
+
+# 
+# output$table2 <- renderDataTable({
+#   
+#   data <- data.frame(cbind(names(d[c(4,8,12,15,16,17,18)]), t(d[d[,1] == values$selectedFeature$name,c(4,8,12,15,16,17,18)])))
+#   data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
+#   data
+# },options = list(searching = FALSE,paging = FALSE))
+
 })
-
-
-#d$features.properties.name == 'Aberdeen Donside P Const',]
-# d[d$features.properties.name == 'Aberdeen Donside P Const' | d$features.properties.name == 'Stadsregio Amsterdam',c(5,24) ]

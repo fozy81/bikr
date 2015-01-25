@@ -16,8 +16,13 @@ shinyUI(navbarPage(
                                  ".shiny-output-error { visibility: hidden; }",
                                  ".shiny-output-error:before { visibility: hidden; }"
     ),
-                    "Status Table", dataTableOutput(outputId="table")),
+                    "Status Table", dataTableOutput('table')),
     fluidRow(column(7,"Status Chart", plotOutput("chart2")
     )))
           
-)),tabPanel("Objectives"),tabPanel("Measures"),tabPanel("Outcomes"),tabPanel("Sandbox"),tabPanel("Scenario Planning")))
+)),tabPanel("Objectives", fluidRow( column(6, 
+                                           numericInput("num", 
+                                                        label = h3("Number of years for objective"), 
+                                                        value = 7))),  fluidRow(column(6, "Table",dataTableOutput('table2')))   
+)
+,tabPanel("Measures"),tabPanel("Outcomes"),tabPanel("Sandbox"),tabPanel("Scenario Planning")))
