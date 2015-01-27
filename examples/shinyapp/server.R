@@ -1,6 +1,7 @@
 library(leaflet)
 #library(jsonlite)
 library(RJSONIO)
+#devtools::install_github("fozy81/mypackage")
 library(bikr)
 library(ggplot2)
 
@@ -69,16 +70,15 @@ shinyServer(function(input, output, session) {
     as.character(tags$div(
       tags$h3(values$selectedFeature$name),
       tags$h3(
-        "Rank:",paste(d$Rank[d[,1] == values$selectedFeature$name]," out of ",length(d[,1]))
-       
-      )
+        "Rank:",paste(d$'Rank'[d[,1] == values$selectedFeature$name]," out of ",length(d[,1]))),
+      tags$p(paste(d$'Description'[d[,1] == values$selectedFeature$name]))
     ))
   })
   
   
   output$table <- renderDataTable({
   
-    data <- data.frame(cbind(names(d[c(4,8,12,15,16,17,18)]), t(d[d[,1] == values$selectedFeature$name,c(4,8,12,15,16,17,18)])))
+    data <- data.frame(cbind(names(d[c(4,8,12,15,16,17,19)]), t(d[d[,1] == values$selectedFeature$name,c(4,8,12,15,16,17,19)])))
     data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
   },options = list(searching = FALSE,paging = FALSE))
@@ -104,7 +104,7 @@ shinyServer(function(input, output, session) {
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
     p <-  qplot(x = d[,1],  y = d[,15], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
-    p <- p + scale_fill_manual(values= sort(d[,19],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
+    p <- p + scale_fill_manual(values= sort(d[,20],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
     return(p)
     
   })

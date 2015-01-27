@@ -141,13 +141,22 @@ bicycleStatus <- function(x){
   x$'Confidence' <- (round(x$'Confidence' / max(x$'Confidence'),digits=2) * 100) + 40 #mmmmh smell the fudge
   x$'Confidence' <- ifelse(x$'Confidence' > 100,paste("100%"), paste(x$'Confidence',"%",sep="")) 
 
+  x$'Description' <- paste("The cycle infrastructure in ", x[,1]," consists of ",x[,2],
+                           "km of cycle path (separated from motor-vehicle traffic), ",x[,4], 
+                           " bicycle parking areas and ",x[,6],
+                           "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(x[,12] * 100,digits=0),
+                           "%, this compares to ", round(x[maxrow,12]* 100,digits=0),"% in Amsterdam.",
+                           sep="")  
+  
   x  <-  x[1:maxrow-1,] # remove Amsterdam from dataframe before returning?? not sure if necessary
   
   # rank results  
   x <-  x[with(x, order(x$'Total normalised',decreasing = T )), ]
   x$'Rank' <- 1:length(x[,1])
+  
+
    
-  return(x[,c(1,12:28)])
+  return(x[,c(1,12:29)])
 }
 
 
