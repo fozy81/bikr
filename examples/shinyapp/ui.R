@@ -20,9 +20,12 @@ shinyUI(navbarPage(
     fluidRow(column(7,"Status Chart", plotOutput("chart2")
     )))
           
-)),tabPanel("Objectives", fluidRow( column(6, 
+)),tabPanel("Objectives", fluidRow( column(6, p("Target for Good status (80% of Amsterdam level) based on number of years and cost per km of cycle path"),
                                            numericInput("num", 
-                                                        label = h3("Number of years for objective"), 
-                                                        value = 7))),  fluidRow(column(6, "Table",dataTableOutput('table2')))   
+                                                        label = p("Number of years for objective"), 
+                                                        value = 7))),hr(),
+                                    fluidRow( column(6, (numericInput("cost", 
+                                                        label = p("Cost per km of cycle path"), 
+                                                        value = 200000)))),  fluidRow(column(6, dataTableOutput('table2')))   
 )
 ,tabPanel("Measures"),tabPanel("Outcomes"),tabPanel("Sandbox"),tabPanel("Scenario Planning")))

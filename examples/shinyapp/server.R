@@ -112,7 +112,7 @@ shinyServer(function(input, output, session) {
  output$table2 <- renderDataTable({
 
    e <- bicycleStatus(scotlandAmsterdam)
-data <- bicycleTarget(summary=scotlandAmsterdam,status=e,completion=input$num)
+data <- bicycleTarget(summary=scotlandAmsterdam,status=e,completion=input$num, cost=input$cost)
 
 data
 

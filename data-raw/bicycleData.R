@@ -16,7 +16,7 @@
 #password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
 #host <- "localhost"
 #con <- dbConnect(dbDriver("PostgreSQL"), user=user,
- #                password=password, dbname=dbname, host=host)
+         #       password=password, dbname=dbname, host=host)
 
 
 #### order columns required for bicycleStatus function:
@@ -55,6 +55,9 @@ dbSendQuery(con, paste("DROP TABLE IF EXISTS table shop_scotland_area, bicycle_p
 dbSendQuery(con,paste("create table bicycle_parking as select * from planet_osm_point where planet_osm_point.amenity = 'bicycle_parking'"))
 
 #### Areas update ####
+
+#dbSendQuery(con,paste("alter table merged ADD column proposed_highways NUMERIC"))
+#dbSendQuery(con,paste("alter table merged ADD column construction_highways NUMERIC"))
 #dbSendQuery(con,paste("alter table merged drop column edit_date"))
 # dbSendQuery(con,paste("alter table merged add column edit_date DATE"))
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN editors NUMERIC"))
@@ -68,10 +71,34 @@ dbSendQuery(con,paste("create table bicycle_parking as select * from planet_osm_
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN bicycle_parking INTEGER"))
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN area NUMERIC"))
 
+
+# highway proposed
+dbSendQuery(con,paste("UPDATE merged SET proposed_highways = (
+SELECT  sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000
+FROM
+planet_osm_line r
+WHERE
+ST_Contains(merged.way,r.way) AND r.highway = 'proposed'
+AND not r.tags->'proposed' in ('cycleway','bridleway','bicycle','footway','raceway',
+'steps','path','track','pedestrian'))"))
+
+dbSendQuery(con,paste("UPDATE merged SET proposed_highways = 0 WHERE proposed_highways IS NULL"))
+
+
+# highway construction
+dbSendQuery(con,paste("UPDATE merged SET construction_highways = (
+SELECT  sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000
+FROM
+planet_osm_line r
+WHERE
+ST_Contains(merged.way,r.way) AND r.construction is not null 
+AND 
+r.highway = 'construction' and not r.tags->'construction' in ('cycleway','bridleway','bicycle','footway','raceway',
+'steps','path','track','pedestrian'))"))
+
+dbSendQuery(con,paste("UPDATE merged SET construction_highways = 0 WHERE construction_highways IS NULL"))
+
 # edit_date
-
-
-
 dbSendQuery(con,paste("UPDATE merged SET edit_date = (SELECT 
                         max(osm_timestamp)
 FROM 
@@ -79,11 +106,7 @@ FROM
 WHERE ST_Contains(merged.way,r.way)
 )"))
 
-
-# dbSendQuery(con,paste("UPDATE merged SET edit_date = 0 WHERE edit_date IS NULL"))
-
 # editors
-
 dbSendQuery(con,paste("UPDATE merged SET editors = (SELECT count(distinct osm_uid)
 FROM 
   bicycle_parking r
@@ -94,7 +117,6 @@ dbSendQuery(con,paste("UPDATE merged SET editors = 0 WHERE editors IS NULL"))
 
 
 # proposed_off_road_cycleway
-
 dbSendQuery(con,paste("UPDATE merged SET proposed_off_road_cycleway = (SELECT 
                          sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000 
 FROM 
@@ -109,7 +131,6 @@ dbSendQuery(con,paste("UPDATE merged SET proposed_off_road_cycleway = 0 WHERE pr
 
 
 # construction_off_road_cycleway
-
 dbSendQuery(con,paste("UPDATE merged SET construction_off_road_cycleway = (SELECT 
                          sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000 
 FROM 
@@ -123,7 +144,6 @@ OR (r.highway = 'construciton' AND r.tags->'bicycle' IN ('yes','designated')))
 dbSendQuery(con,paste("UPDATE merged SET construction_off_road_cycleway = 0 WHERE construction_off_road_cycleway IS NULL"))
 
 # proposed_NCN
-
 dbSendQuery(con,paste("UPDATE merged SET proposed_NCN = (SELECT 
                          sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000 
 FROM 
@@ -133,7 +153,6 @@ WHERE ST_Contains(merged.way,r.way) AND ncn = 'yes' AND r.tags->'state'='propose
 dbSendQuery(con,paste("UPDATE merged SET proposed_NCN = 0 WHERE proposed_NCN IS NULL"))
 
 # NCN length
-
 dbSendQuery(con,paste("UPDATE merged SET NCN = (SELECT 
                          sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000 
 FROM 
@@ -143,12 +162,10 @@ WHERE ST_Contains(merged.way,r.way) AND ncn = 'yes'  )"))
 dbSendQuery(con,paste("UPDATE merged SET NCN = 0 WHERE NCN IS NULL"))
 
 # Area
-
 dbSendQuery(con,paste("UPDATE merged SET area = (SELECT ST_Area(ST_Transform(merged.way,4326)::geography) / 10000
                            )"))
 
 # bicycle parking
-
 dbSendQuery(con,paste("UPDATE merged SET bicycle_parking = (SELECT count(amenity)    
                                      FROM bicycle_parking
                             WHERE ST_Intersects(bicycle_parking.way,merged.way)
@@ -157,7 +174,6 @@ dbSendQuery(con,paste("UPDATE merged SET bicycle_parking = (SELECT count(amenity
 dbSendQuery(con,paste("UPDATE merged SET bicycle_parking = 0 WHERE bicycle_parking IS NULL"))
 
 # off_road_cycle_paths
-
  dbSendQuery(con,paste("UPDATE merged SET off_road_cycleway = (SELECT  
  sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000 
 FROM 
@@ -170,13 +186,12 @@ WHERE ST_Contains(merged.way,r.way) AND
 dbSendQuery(con,paste("UPDATE merged SET off_road_cycleway = 0 WHERE off_road_cycleway IS NULL"))
 
 # road highways
-
 dbSendQuery(con,paste("UPDATE merged SET highways = (
 SELECT  sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000
 FROM
 planet_osm_line r
 WHERE
-ST_Contains(merged.way,r.way) AND
+ST_Contains(merged.way,r.way) AND r.highway is not null AND
 NOT r.highway = 'track' AND NOT r.highway = 'cycleway' AND
 NOT r.highway = 'path' AND NOT r.highway = 'bridleway' AND 
 NOT r.highway = 'footway' AND NOT highway = 'steps' AND
@@ -184,17 +199,9 @@ NOT r.highway = 'raceway' AND NOT r.highway = 'pedestrian')"))
 
 dbSendQuery(con,paste("UPDATE merged SET highways = 0 WHERE highways IS NULL"))
 
-# ratio
-
-dbSendQuery(con,paste("UPDATE merged SET cycleway_v_highway = 
-off_road_cycleway/merged.highways
-"))
-
-dbSendQuery(con,paste("UPDATE merged SET cycleway_v_highway = 0 WHERE cycleway_v_highway IS NULL"))
-
-
-system(paste("rm /home/tim/github/cycle-map-stats/Rscript/summary.json"))      
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/cycle-map-stats/Rscript/summary.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 50 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
+## save file
+system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json"))      
+command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 55 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
 #command2 <- paste("topojson -o /home/tim/github/cycle-map-stats/Rscript/summaryTopo.json /home/tim/github/cycle-map-stats/Rscript/summary.json")
 system(command)
 #system(command2)
