@@ -49,10 +49,25 @@ bicycleData <- function(user=user,
                    password=password, dbname=dbname, host=host)
 
 ##### drop all tables if exists
-dbSendQuery(con, paste("DROP TABLE IF EXISTS table shop_scotland_area, bicycle_parking, shop_scotland_poly, shops, shops_point"))
+dbSendQuery(con, paste("DROP TABLE IF EXISTS shop_scotland_area, bicycle_parking, shop_scotland_poly, shops, shops_point"))
 
 ##### cycle parking
-dbSendQuery(con,paste("create table bicycle_parking as select * from planet_osm_point where planet_osm_point.amenity = 'bicycle_parking'"))
+dbSendQuery(con,paste("create table bicycle_parking
+as 
+select  p.covered, p.way, p.osm_id
+from planet_osm_point p
+where p.amenity = 'bicycle_parking'
+union all 
+select  covered, way, osm_id
+from planet_osm_line
+where planet_osm_line.amenity = 'bicycle_parking'
+union all 
+select  covered, way, osm_id
+from planet_osm_polygon
+where planet_osm_polygon.amenity = 'bicycle_parking'"))
+
+dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))           
+            
 
 #### Areas update ####
 
@@ -138,7 +153,7 @@ FROM
 WHERE ST_Contains(merged.way,r.way) AND 
 (r.highway = 'construction' and r.tags->'construction'='cycleway' 
 OR (r.highway='construction' and r.tags->'construction'='bridleway' 
-OR (r.highway = 'construciton' AND r.tags->'bicycle' IN ('yes','designated')))
+OR (r.highway = 'construction' AND r.tags->'bicycle' IN ('yes','designated')))
 ))"))
 
 dbSendQuery(con,paste("UPDATE merged SET construction_off_road_cycleway = 0 WHERE construction_off_road_cycleway IS NULL"))
@@ -179,8 +194,11 @@ dbSendQuery(con,paste("UPDATE merged SET bicycle_parking = 0 WHERE bicycle_parki
 FROM 
   planet_osm_line r
 WHERE ST_Contains(merged.way,r.way) AND 
-(r.highway = 'cycleway' OR (r.highway='bridleway' OR (r.highway = 'path' AND r.bicycle in ('yes','designated')))
-))
+(r.highway = 'cycleway' AND r.surface NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips')
+OR (r.highway='bridleway' AND r.surface NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips') OR (r.highway = 'path' AND r.bicycle in ('yes','designated') AND r.surface 
+NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips')
+OR (r.highway='pedestrian' AND r.bicycle in ('yes','designated') OR (r.highway='cycleway' and r.surface IS NULL)
+)))))
 ",sep=""))
 
 dbSendQuery(con,paste("UPDATE merged SET off_road_cycleway = 0 WHERE off_road_cycleway IS NULL"))
