@@ -11,12 +11,12 @@
 
 #### database details
 
-#dbname <- "gis2"
-#user <- "tim"
-#password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
-#host <- "localhost"
-#con <- dbConnect(dbDriver("PostgreSQL"), user=user,
-         #       password=password, dbname=dbname, host=host)
+# dbname <- "gis2"
+# user <- "tim"
+# password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
+# host <- "localhost"
+# con <- dbConnect(dbDriver("PostgreSQL"), user=user,
+#               password=password, dbname=dbname, host=host)
 
 
 #### order columns required for bicycleStatus function:
@@ -71,6 +71,9 @@ dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))
 
 #### Areas update ####
 
+# dbSendQuery(con,paste("UPDATE merged SET name = 'Stadsregio Amsterdam' WHERE name = ''"))
+# dbGetQuery(con,paste("update merged SET name = area10.name FROM area10 WHERE area10.code = merged.code"))
+# dbGetQuery(con,paste("update merged set name = left(name, -8)"))
 #dbSendQuery(con,paste("alter table merged ADD column proposed_highways NUMERIC"))
 #dbSendQuery(con,paste("alter table merged ADD column construction_highways NUMERIC"))
 #dbSendQuery(con,paste("alter table merged drop column edit_date"))
@@ -220,8 +223,13 @@ dbSendQuery(con,paste("UPDATE merged SET highways = 0 WHERE highways IS NULL"))
 ## save file
 system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json"))      
 command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 55 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
-#command2 <- paste("topojson -o /home/tim/github/cycle-map-stats/Rscript/summaryTopo.json /home/tim/github/cycle-map-stats/Rscript/summary.json")
 system(command)
-#system(command2)
+
+# save RData object into package
+library(jsonlite)
+d <- data.frame(fromJSON('/home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json',flatten=T))
+
+scotlandAmsterdam <- d[,c(5,7:18)]
+save(scotlandAmsterdam,file="data/scotlandAmsterdam.RData") 
 
 }

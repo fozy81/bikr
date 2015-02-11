@@ -6,11 +6,11 @@ library(bikr)
 library(ggplot2)
 
 d <- bicycleStatus(scotlandAmsterdam)
-d$fillcolor <- ifelse(d[,16] == "High","#ffffb2","")
-d$fillcolor <- ifelse(d[,16] == "Good","#fecc5c",d$fillcolor)
-d$fillcolor <- ifelse(d[,16] == "Moderate","#fd8d3c",d$fillcolor)
-d$fillcolor <- ifelse(d[,16] == "Poor","#f03b20",d$fillcolor)
-d$fillcolor <- ifelse(d[,16] == "Bad","#bd0026",d$fillcolor)
+d$fillcolor <- ifelse(d[,17] == "High","#ffffb2","")
+d$fillcolor <- ifelse(d[,17] == "Good","#fecc5c",d$fillcolor)
+d$fillcolor <- ifelse(d[,17] == "Moderate","#fd8d3c",d$fillcolor)
+d$fillcolor <- ifelse(d[,17] == "Poor","#f03b20",d$fillcolor)
+d$fillcolor <- ifelse(d[,17] == "Bad","#bd0026",d$fillcolor)
 
 #d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
 #geojsonFile <- fromJSON('examples/shinyapp/scotlandAmsterdam.json')
@@ -78,7 +78,7 @@ shinyServer(function(input, output, session) {
   
   output$table <- renderDataTable({
   
-    data <- data.frame(cbind(names(d[c(4,8,12,15,16,17,19)]), t(d[d[,1] == values$selectedFeature$name,c(4,8,12,15,16,17,19)])))
+    data <- data.frame(cbind(names(d[c(3,7,11,16,17,18,20)]), t(d[d[,1] == values$selectedFeature$name,c(3,7,11,16,17,18,20)])))
     data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
   },options = list(searching = FALSE,paging = FALSE))
@@ -103,8 +103,8 @@ shinyServer(function(input, output, session) {
     d <- d[d[,1] == values$selectedFeature$name | d[,1] == 'Stadsregio Amsterdam', ]
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
-    p <-  qplot(x = d[,1],  y = d[,15], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
-    p <- p + scale_fill_manual(values= sort(d[,20],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
+    p <-  qplot(x = d[,1],  y = d[,16], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
+    p <- p + scale_fill_manual(values= sort(d[,21],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
     return(p)
     
   })
@@ -119,14 +119,14 @@ data
  },options = list(searching = FALSE,paging = FALSE))
 
 
+# output$measuresTable <- renderDataTable({
+
+#d <- bicycleStatus(scotlandAmsterdam)
 
 
-# 
-# output$table2 <- renderDataTable({
-#   
-#   data <- data.frame(cbind(names(d[c(4,8,12,15,16,17,18)]), t(d[d[,1] == values$selectedFeature$name,c(4,8,12,15,16,17,18)])))
-#   data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
-#   data
-# },options = list(searching = FALSE,paging = FALSE))
+
+#})
+
+
 
 })

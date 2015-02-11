@@ -96,7 +96,7 @@ bicycleStatus <- function(x){
   
   #normalised cyclepath ratioweighting * 4
   x$'cyclepath to road ratio' <-   round(x[,2] / x[,3] ,digits=3)  
-  x$'cyclepath to road ratio norm' <- round(x$'cyclepath to road ratio' / x[maxrow,12],digits=3)
+  x$'cyclepath to road ratio norm' <- round(x$'cyclepath to road ratio' / x$'cyclepath to road ratio'[maxrow],digits=3)
   x$'cyclepath to road ratio norm' <- ifelse(x$'cyclepath to road ratio norm'> 1,1,x$'cyclepath to road ratio norm') 
   x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.8, "Good", "High")
   x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.6, "Moderate",  x$'Cycle path status')
@@ -106,7 +106,7 @@ bicycleStatus <- function(x){
   
   # normalised cycleparking   
   x$'area to bicycle parking ratio' <- round(x[,4] / x[,5],digits=6) 
-  x$'area to bicycle parking ratio norm' <- round(x$'area to bicycle parking ratio' / x[maxrow,16],digits=2)
+  x$'area to bicycle parking ratio norm' <- round(x$'area to bicycle parking ratio' / x$'area to bicycle parking ratio'[maxrow],digits=2)
   x$'area to bicycle parking ratio norm' <-  ifelse( x$'area to bicycle parking ratio norm' > 1,1, x$'area to bicycle parking ratio norm')
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.8, "Good", "High")
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.6, "Moderate",  x$'Bicycle parking status')
@@ -118,7 +118,7 @@ bicycleStatus <- function(x){
   
   # route to road ratio  weighting * 2
   x$'cycle route to road ratio' <- round(x[,6] / x[,3], digits=3) 
-  x$'cycle route to road ratio norm' <- round(x$'cycle route to road ratio' / x[maxrow,20],digits=2)
+  x$'cycle route to road ratio norm' <- round(x$'cycle route to road ratio' / x$'cycle route to road ratio'[maxrow],digits=2)
   x$'cycle route to road ratio norm' <-  ifelse( x$'cycle route to road ratio norm' >1 ,1, x$'cycle route to road ratio norm')  
   x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.8, "Good", "High")
   x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.6, "Moderate",  x$'National cycle network status')
@@ -128,7 +128,7 @@ bicycleStatus <- function(x){
   
   # 4:2:1 weighting combined for Overall  
   x$'Indicator total' <-   round(x$'cyclepath to road ratio norm weighted' +  x$'cycle route to road ratio norm weighted' +  x$'area to bicycle parking ratio norm' + x$'rural weighting', digits=2)
-  x$'Total normalised' <- round(x$'Indicator total' / x[maxrow,24],digits=2)
+  x$'Total normalised' <- round(x$'Indicator total' /   x$'Indicator total'[maxrow],digits=2)
   
   # Quintiles for status  
   x$'Status' <- ifelse(x$'Total normalised' <= 0.8, "Good", "High")
@@ -137,15 +137,15 @@ bicycleStatus <- function(x){
   x$'Status' <- ifelse(x$'Total normalised' <= 0.2, "Bad",   x$'Status')
   
   # Confidence needs reworking/refactoring e.g. add an area size biase instead of this fudge:  
-  x$'Confidence' <- (x[,10] + as.numeric(substr(x[,11],1,4))) - 2010 
+  x$'Confidence' <- (x[,4] + as.numeric(substr(x[,11],1,4))) - 2010 
   x$'Confidence' <- (round(x$'Confidence' / max(x$'Confidence'),digits=2) * 100) + 40 #mmmmh smell the fudge
   x$'Confidence' <- ifelse(x$'Confidence' > 100,paste("100%"), paste(x$'Confidence',"%",sep="")) 
 
   x$'Description' <- paste("The cycle infrastructure in ", x[,1]," consists of ",x[,2],
                            "km of cycle path (separated from motor-vehicle traffic), ",x[,4], 
                            " bicycle parking areas and ",x[,6],
-                           "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(x[,12] * 100,digits=0),
-                           "%, this compares to ", round(x[maxrow,12]* 100,digits=0),"% in Amsterdam.",
+                           "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(x$'cyclepath to road ratio' * 100,digits=0),
+                           "%, this compares to ", round(x$'cyclepath to road ratio'[maxrow]* 100,digits=0),"% in Amsterdam.",
                            sep="")  
   
   x  <-  x[1:maxrow-1,] # remove Amsterdam from dataframe before returning?? not sure if necessary
@@ -156,7 +156,7 @@ bicycleStatus <- function(x){
   
 
    
-  return(x[,c(1,12:29)])
+  return(x[,c(1,13:31)])
 }
 
 
