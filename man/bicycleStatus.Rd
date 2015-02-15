@@ -3,19 +3,21 @@
 \name{bicycleStatus}
 \alias{bicycleStatus}
 \title{bicycleStatus}
-\format{A data frame with 11 variables in this column order:
+\format{A data frame with 13 variables in this column order:
 \describe{
 \item{\code{name}}{name or unique id of area}
-\item{\code{cyclepath}}{length in km of cyclepaths}
+\item{\code{cyclepath}}{length in km of cycle paths}
 \item{\code{road}}{total length in km of paved roads}
-\item{\code{bicycleparking}}{number of bicycle parking points form openstreetmap}
+\item{\code{bicycleparking}}{number of bicycle parking points}
 \item{\code{area}}{Area in hectares of polygon being assessed}
 \item{\code{routes}}{length in km of proposed Nation cycle route}
 \item{\code{proposedroutes}}{length in km of proposed Nation cycle route}
-\item{\code{proposedcyclepath}}{length in km of proposed cyclepath}
-\item{\code{constructioncyclepath}}{Length in km of cyclepath underconstruction}
-\item{\code{editors}}{Numer of openstreetmap editors}
-\item{\code{lasteditdate}}{Date of last edit in openstreetmap}
+\item{\code{proposedcyclepath}}{length in km of proposed cycle path}
+\item{\code{constructioncyclepath}}{Length in km of cyclepath under construction}
+\item{\code{editors}}{Number of openstreetmap editors of bicycle parking}
+\item{\code{lasteditdate}}{Date of last edit in openstreetmap of bicycle parking}
+\item{\code{proposedhighways}}{length in km of proposed roads}
+\item{\code{constructionshighways}}{length in km of construction roads}
 }}
 \usage{
 bicycleStatus(x)
@@ -23,35 +25,43 @@ bicycleStatus(x)
 \arguments{
 \item{x}{Dataframe input from bicycleData function}
 
-\item{effort}{Estimate sampling effort to assess confidence in data quality
-(default=TRUE)}
-
 \item{amsterdamIndex}{Calculate status relative to data for Amsterdam included in
 package (default=FALSE)}
 
-\item{objectives}{Calculate required improvements based on objective year and
-proposed status (default=TRUE)}
-
-\item{measures}{Calculate indicators and status based on proposed and under
-construction cycle indictators (default=TRUE)}
+\item{effort}{Estimate sampling effort to assess confidence in data quality
+(default=TRUE)}
 }
 \value{
-dataframe
+dataframe containing the following:
+\describe{
+\item{\code{name}}{name or unique id of area}
+\item{\code{cyclepath to road
+ratio}}{A ratio of cycle to road}
+\item{\code{cyclepath to road ratio
+norm}}{A ratio of cycle path to road normalise against max value or
+Amsterdam=default}
+\item{\code{Cycle path status}}{Status of cycle path based
+on quintiles}
+\item{\code{cyclepath to road ratio norm weighted}}{A ratio of
+cycle path to road with * 4 weighting. The cycle path to raod ratio is deemed
+to be *4 more important than the other indexes}
+....to be completed
+}
 }
 \description{
 bicycleStatus is used to calculate and classify an index for bicycle
 infrastructure based on a dataframe of bicycle indicators.
 }
 \details{
-For instance, the example dataset in this package uses data from Scotland and
-compares it against Amsterdam. Unsuprisingly, Amsterdam provides the best
-infrastructre, the other Scottish areas are classified based on 5 quintiles
+Using the example dataset in this package which uses data from Scotland and
+compares it against Amsterdam, its possible to see that Amsterdam provides better
+infrastructure. The Scottish areas are classified based on 5 quintiles
 on a normalised scale between 0-1 (Amsterdam = 1).
 
-This function is designed to work of value obtained from OpenStreetMap data.
-Specifically, it has been designed to use the bicycleData function. This
-function returns a dataframe from an OpenStreetMap database with the
-arguments required for use with bicycleStatus. Other data sources or
+This function is designed to work from indicator values obtained from
+OpenStreetMap data. Specifically, it has been designed to use the bicycleData
+function. This function returns a dataframe from an OpenStreetMap database
+with the arguments required for use with bicycleStatus. Other data sources or
 supplementary data sources could be used as long as the dataframe is
 constructed correctly for this function. There are four indicator ratios of
 bicycle infrastructure which are combined to give an overall classification.
@@ -84,5 +94,8 @@ required to make this robust.
 Objectives and measures are calculated to project the amount of improvement
 required for a area to reach the equivalent status as the highest ranked area
 within the dataset.
+}
+\examples{
+bicycleStatus(scotlandAmsterdam)
 }
 

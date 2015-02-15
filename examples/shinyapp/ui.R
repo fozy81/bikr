@@ -26,8 +26,8 @@ shinyUI(navbarPage(
                                                         value = 7))),hr(),
                                     fluidRow( column(6, (numericInput("cost", 
                                                         label = p("Cost per km of cycle path"), 
-                                                        value = 200000)))),  fluidRow(column(8, dataTableOutput('table2')))   
+                                                        value = 200000)))),  fluidRow(column(9, dataTableOutput('table2')))   
 )
-,tabPanel("Measures", fluidRow(column(10, p("Future forecast - based on proposed and under construction roads in OpenStreetMap"),dataTableOutput('measuresTable')))   
+,tabPanel("Measures", fluidRow(column(6, p("Future forecast - based on proposed and under construction roads in OpenStreetMap"),dataTableOutput('measuresTable')))   
 )
 ,tabPanel("Outcomes"),tabPanel("Sandbox"),tabPanel("Scenario Planning")))

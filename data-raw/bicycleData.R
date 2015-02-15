@@ -1,3 +1,4 @@
+
 #' Query bicycle data from a database which uses the osm2postgresql schema with all tags h-store activated. 
 #' 
 #' requires OGR2OGR command line tool and access to osm2postgesql database schema

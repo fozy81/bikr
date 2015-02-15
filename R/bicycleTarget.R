@@ -10,7 +10,7 @@
 #bicycleTarget(summary, status,completion)
 
 
-bicycleTarget <- function(summary, status,completion, cost){
+bicycleTarget <- function(summary, status,completion=7, cost=150000){
   
 #  x <- rbind(x, scotlandAmsterdam[scotlandAmsterdam[,1] == 'Stadsregio Amsterdam',])
 #  maxrow <- length(x[,1])

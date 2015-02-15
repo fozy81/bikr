@@ -81,7 +81,7 @@ shinyServer(function(input, output, session) {
     data <- data.frame(cbind(names(d[c(3,7,11,16,17,18,20)]), t(d[d[,1] == values$selectedFeature$name,c(3,7,11,16,17,18,20)])))
     data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
-  },options = list(searching = FALSE,paging = FALSE))
+  },options = list(searching =FALSE,paging = FALSE))
  
 # out use dimple library: doesn't render correctly:
 #   output$chart2 <- renderChart2({
@@ -116,7 +116,7 @@ data <- bicycleTarget(summary=scotlandAmsterdam,status=d,completion=input$num, c
 
 data
 
- },options = list(searching = FALSE,paging = FALSE))
+ },options = list(searching = TRUE,paging = FALSE))
 
 
  output$measuresTable <- renderDataTable({
@@ -124,10 +124,6 @@ data
 data <- bicycleMeasures(scotlandAmsterdam)
 
 data
-
-
-})
-
-
+},options = list(searching = TRUE,paging = FALSE))
 
 })
