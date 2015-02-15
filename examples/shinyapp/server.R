@@ -12,7 +12,7 @@ d$fillcolor <- ifelse(d[,17] == "Moderate","#fd8d3c",d$fillcolor)
 d$fillcolor <- ifelse(d[,17] == "Poor","#f03b20",d$fillcolor)
 d$fillcolor <- ifelse(d[,17] == "Bad","#bd0026",d$fillcolor)
 
-#d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
+#d <- data.frame(fromJSON('examples/shinyapp/scotlandAmsterdam.json',flatten=T))
 #geojsonFile <- fromJSON('examples/shinyapp/scotlandAmsterdam.json')
 #fileName <- fromJSON'scotlandAmsterdam.json'
 #geojsonFile <- readChar(fileName, file.info(fileName)$size)
@@ -62,11 +62,19 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  
+  output$rankTable  <- renderDataTable({
+    if (is.null(values$selectedFeature))
+      
+      rankTable <- d[,c(1,17,20)]
+    rankTable
+  })
+  
   output$details <- renderText({
     # Render values$selectedFeature, if it isn't NULL.
     if (is.null(values$selectedFeature))
-      return(NULL)
-    
+     return(NULL)  
+       
     as.character(tags$div(
       tags$h3(values$selectedFeature$name),
       tags$h3(

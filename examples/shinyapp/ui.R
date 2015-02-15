@@ -12,10 +12,11 @@ shinyUI(navbarPage(
     zoom = 5
   ))),
   htmlOutput("details"),hr(),
-     fluidRow(column(5,tags$style(type="text/css",
+     fluidRow(column(7,tags$style(type="text/css",
                                  ".shiny-output-error { visibility: hidden; }",
                                  ".shiny-output-error:before { visibility: hidden; }"
     ),
+    "Rank table", dataTableOutput('rankTable'),
                     "Status Table", dataTableOutput('table')),
     fluidRow(column(7,"Status Chart", plotOutput("chart2")
     )))

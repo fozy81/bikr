@@ -72,6 +72,7 @@ dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))
 
 #### Areas update ####
 
+# dbSendQuery(con,paste("update merged SET code = 0 WHERE code IS NULL"))
 # dbSendQuery(con,paste("UPDATE merged SET name = 'Stadsregio Amsterdam' WHERE name = ''"))
 # dbGetQuery(con,paste("update merged SET name = area10.name FROM area10 WHERE area10.code = merged.code"))
 # dbGetQuery(con,paste("update merged set name = left(name, -8)"))
