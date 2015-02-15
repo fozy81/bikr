@@ -9,6 +9,5 @@ Description: This package provides a set of functions to query OpenStreetMap dat
 Depends: R (>= 3.1.0)
 License: MIT +  file LICENSE
 Suggests: knitr
-Imports: RPostgreSQL
 VignetteBuilder: knitr
 LazyData: true
