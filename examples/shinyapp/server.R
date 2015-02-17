@@ -1,3 +1,4 @@
+library(rCharts)
 library(leaflet)
 #library(jsonlite)
 library(RJSONIO)
@@ -6,11 +7,11 @@ library(bikr)
 library(ggplot2)
 
 d <- bicycleStatus(scotlandAmsterdam)
-d$fillcolor <- ifelse(d[,17] == "High","#ffffb2","")
-d$fillcolor <- ifelse(d[,17] == "Good","#fecc5c",d$fillcolor)
-d$fillcolor <- ifelse(d[,17] == "Moderate","#fd8d3c",d$fillcolor)
-d$fillcolor <- ifelse(d[,17] == "Poor","#f03b20",d$fillcolor)
-d$fillcolor <- ifelse(d[,17] == "Bad","#bd0026",d$fillcolor)
+d$fillcolor <- ifelse(d[,18] == "High","#ffffb2","")
+d$fillcolor <- ifelse(d[,18] == "Good","#fecc5c",d$fillcolor)
+d$fillcolor <- ifelse(d[,18] == "Moderate","#fd8d3c",d$fillcolor)
+d$fillcolor <- ifelse(d[,18] == "Poor","#f03b20",d$fillcolor)
+d$fillcolor <- ifelse(d[,18] == "Bad","#bd0026",d$fillcolor)
 
 #d <- data.frame(fromJSON('examples/shinyapp/scotlandAmsterdam.json',flatten=T))
 #geojsonFile <- fromJSON('examples/shinyapp/scotlandAmsterdam.json')
@@ -62,11 +63,35 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  datasetTargetTotal <- reactive({
+    data <- bicycleTarget(summary=scotlandAmsterdam,status=d,completion=input$num, cost=input$cost)
+    data <- sum(as.numeric(as.character(data$'Projected Cost per year £M')))
+    data
+  })
+  
+  datasetTarget<- reactive({
+    datas <- bicycleTarget(summary=scotlandAmsterdam,status=d,completion=input$num, cost=input$cost)
+     datas
+  })
+  
+  
+  output$description  <- renderText({
+    if (is.null(values$selectedFeature))
+      
+     description <- paste("The cycle infrastructure in Scotland consists of ",sum(scotlandAmsterdam[c(1:15,17:74),2]),
+                               "km of cycle path (separated from motor-vehicle traffic), ",sum(scotlandAmsterdam[c(1:15,17:74),4]), 
+                               " bicycle parking areas and ",sum(scotlandAmsterdam[c(1:15,17:74),6]),
+                               "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(mean(d$'cyclepath to road ratio' * 100,digits=0)),
+                               "%, this compares to ", round(max(d$'cyclepath to road ratio') * 100,digits=0),"% in the Amsterdam region.",
+                               sep="")   
+    
+  })
+  
   
   output$rankTable  <- renderDataTable({
     if (is.null(values$selectedFeature))
       
-      rankTable <- d[,c(1,17,20)]
+      rankTable <- d[,c(1,18,21)]
     rankTable
   })
   
@@ -86,7 +111,7 @@ shinyServer(function(input, output, session) {
   
   output$table <- renderDataTable({
   
-    data <- data.frame(cbind(names(d[c(3,7,11,16,17,18,20)]), t(d[d[,1] == values$selectedFeature$name,c(3,7,11,16,17,18,20)])))
+    data <- data.frame(cbind(names(d[c(6,10,14,18,19,20,21)]), t(d[d[,1] == values$selectedFeature$name,c(6,10,14,18,19,20,21)])))
     data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
   },options = list(searching =FALSE,paging = FALSE))
@@ -112,26 +137,48 @@ shinyServer(function(input, output, session) {
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
     p <-  qplot(x = d[,1],  y = d[,16], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
-    p <- p + scale_fill_manual(values= sort(d[,21],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
+    p <- p + scale_fill_manual(values= sort(d[,22],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
     return(p)
     
   })
 
+
+
+output$description2  <- renderText({
+  
+   description2 <- paste("The total cost of improving cycle infrastructure to Good status is £ ", datasetTargetTotal()," Million per year",sep="") 
+    description2 
+})
+
  output$table2 <- renderDataTable({
-
- #  e <- bicycleStatus(scotlandAmsterdam)
-data <- bicycleTarget(summary=scotlandAmsterdam,status=d,completion=input$num, cost=input$cost)
-
-data
-
+    datasetTarget() 
  },options = list(searching = TRUE,paging = FALSE))
 
-
  output$measuresTable <- renderDataTable({
-
-data <- bicycleMeasures(scotlandAmsterdam)
-
-data
+    data <- bicycleMeasures(scotlandAmsterdam)
+    data
 },options = list(searching = TRUE,paging = FALSE))
 
+output$chartOutcome <- renderChart2({
+     
+  d <-   merge(d,scotlandAmsterdam,by.x="features.properties.name",by.y="features.properties.name")
+  
+      d$'Name' <- d$features.properties.name
+   
+        p2 <- dPlot(
+        y = "features.properties.commuting_by_bicycle.x",
+        x = "Status",
+        data = d,
+        type = "bar",
+        bounds = list(x = 50, y = 50, height = 250, width = 300)
+      )
+          p2$set(dom = "chartOutcome")
+                 return(p2)
+    })
+  
+
+
 })
+
+
+
