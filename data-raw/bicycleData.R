@@ -245,7 +245,7 @@ system(command)
 library(jsonlite)
 d <- data.frame(fromJSON('/home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json',flatten=T))
 
-scotlandAmsterdam <- d[,c(5,7:19)]
+scotlandAmsterdam <- d[,c(5,7:20)]
 save(scotlandAmsterdam,file="data/scotlandAmsterdam.RData") 
 
 }
