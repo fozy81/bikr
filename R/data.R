@@ -17,8 +17,9 @@
 #' \item{\code{proposedroutes}}{length in km of proposed Nation cycle route}
 #' \item{\code{proposedcyclepath}}{length in km of proposed cyclepath}
 #' \item{\code{constructioncyclepath}}{Length in km of cyclepath underconstruction}
-#' \item{\code{editors}}{Numer of openstreetmap editors}
-#' \item{\code{lasteditdate}}{Date of last edit in openstreetmap}
+#' \item{\code{editors}}{Number of openstreetmap editors of bicycle parking}
+#' \item{\code{lasteditdate}}{Date of last edit in openstreetmap of bicycle parking}
+#' \item{\code{version}}{Number of version of bicycle parking nodes in openstreetmap}
 #' }
 #'
 #' For further details, see \url{http://www.openstreetmap.org}
