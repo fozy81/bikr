@@ -6,7 +6,7 @@
 #' 
 #' @usage bicycleStatus(scotlandAmsterdam)
 #'
-#' @format A data frame with 12 variables:
+#' @format A data frame with 14 variables:
 #' \describe{
 #' \item{\code{name}}{name or unique id of area}
 #' \item{\code{cyclepath}}{length in km of cyclepaths}
