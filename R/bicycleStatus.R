@@ -15,34 +15,35 @@
 #' supplementary data sources could be used as long as the dataframe is 
 #' constructed correctly for this function. There are four indicator ratios of 
 #' bicycle infrastructure which are combined to give an overall classification. 
-#' These are return in a dataframe: The ratio of cyclepath length to road 
+#' These are returned in a dataframe: The ratio of cyclepath length to road 
 #' length, ratio of National Cycle Network routes to roads length and the amount
 #' of bicycle parking per hectare. The is also a 'ruralness weighting' applied 
 #' to account for less densely populated areas which arguably have quieter roads
-#' and require less cycle parking. The ruralness weighting is based on the 
+#' and require less cycle infrastructure. The ruralness weighting is based on the 
 #' relative amount of roads to area as a proxy for population density. See 
 #' bicycleData function for detailed breakdown of the OpenStreetMap data 
 #' required for this function.
 #' 
 #' Once all indicators are calculated they are given weights 4:2:1 for
 #' Cyclepath, National Cycle Route and Bicycle parking ratios respectively. This
-#' weigthting is based on expert opinion and bicycle literature (both of which
+#' weighting is based on expert opinion and bicycle literature (both of which
 #' are deemed to subjective). Further work at linking bicycle indicators on
-#' outcomes i.e. the % of the public travelling using bicycles is planned.
+#' outcomes i.e. the \% of the public travelling using bicycles is planned.
 #' Ultimately, the index is base on quantitive data but the final assigned
-#' status claculated for an area is based to some degree on the weighting given 
+#' status calculated for an area is based to some degree on the weighting given 
 #' to each indicator. The approach is to iterate the classification system to
-#' include to closely align the status to socio-ecomonic-enviromental outcomes.
+#' more closely align the overall status classification to
+#' socio-ecomonic-enviromental outcomes.
 #' 
 #' Each entry in the dataframe is also given a 'Confidence'. In this
-#' context, it tries to measure the sampling effort (number of OpenStreetMap
+#' context, it measures the sampling effort (number of OpenStreetMap
 #' editors) and the time of last edit to represent uncertainty in the
 #' quality of the OpenStreetMap data. However, the current method is a fudge but
-#' produce figures that appear roughly feasible. Further empirical testing
+#' produces figures that appear roughly feasible. Further empirical testing is
 #' required to make this robust.
 #' 
 #' Objectives and measures are calculated to project the amount of improvement
-#' required for a area to reach the equivalent status as the highest ranked area
+#' required for an area to reach the equivalent status as the highest ranked area
 #' within the dataset.
 #' @format A data frame with 13 variables in this column order:
 #' \describe{
@@ -66,7 +67,7 @@
 #' @param effort Estimate sampling effort to assess confidence in data quality
 #'   (default=TRUE)
 #' @param amsterdamIndex Calculate status relative to data for Amsterdam included in
-#'   package (default=FALSE)
+#'   package (default=TRUE)
 # @param objectives Calculate required improvements based on objective year and
 #   proposed status (default=TRUE)
 # @param measures Calculate indicators and status based on proposed and under
@@ -75,19 +76,79 @@
 #' \describe{
 #' \item{\code{name}}{name or unique id of area} 
 #' \item{\code{cyclepath to road
-#' ratio}}{A ratio of cycle to road}
+#' ratio}}{A ratio of cycle path to road}
 #' \item{\code{cyclepath to road ratio
-#' norm}}{A ratio of cycle path to road normalise against max value or
-#' Amsterdam=default}
+#' norm}}{A ratio of cycle path to road normalised against max value or
+#' Amsterdam region (default)}
 #' \item{\code{Cycle path status}}{Status of cycle path based
 #' on quintiles}
 #' \item{\code{cyclepath to road ratio norm weighted}}{A ratio of
 #' cycle path to road with * 4 weighting. The cycle path to raod ratio is deemed
-#' to be *4 more important than the other indexes} 
-#' ....to be completed
+#' to be *4 more important than the other indexes}
+#' \item{\code{area to bicycle parking ratio}}{The number of cycle parking areas
+#' per hectare}
+#' \item{\code{area to bicycle parking ratio norm}}{The number of
+#' cycle parking areas per hectare normalised against max value or 
+#' Amsterdam region (default). This will be a value between 0-1.0. A value of 1.0
+#' is equal to the max. If using amsterdamIndex=TRUE parameter (default), the
+#' value is capped at 1.0 even if higher values are produced than the value
+#' found in Amsterdam region. The value is capped because the Amsterdam region
+#' is being used as the benchmark.}
+#' \item{\code{Bicycle parking status}}{Status of bicycle parking based on 
+#' quintiles of the normalised score. The five categories are High, Good, 
+#' Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad, 
+#' 0.4 = Poor, 0.6 = Moderate, 0.8 = Good, 1.0 = High. For instance, if a 
+#' location has 60\% the parking of Amsterdam it will
+#' be categorised as 'Moderate'.}
+#' \item{\code{rural weighting }}{Rural weighting is a ratio of the length of
+#' road divided by area. This gives an idea of the road density within a given
+#' area and broadly how rural an area may be. It is thought rural
+#' areas will on balance require less bicycle infrastrucutre because quite
+#' country roads, for example single lane roads on islands and roads in remote
+#' areas, don't require off road cycle paths or cycle lanes to the same extent
+#' as busy urban roads.}
+#' \item{\code{bicycle route to road ratio}}{A ratio of National Cycle Network route to road length}
+#' \item{\code{bicycle route to road ratio norm}}{A normalised ratio of
+#' cycle route to road. The normalised value will be between 0-1.0. A value of 1.0
+#' is equal to the max. If using amsterdamIndex=TRUE parameter (default), the
+#' value is capped at 1.0 even if values higher than Amsterdam region
+#' are discovered. The value is capped because the Amsterdam region
+#' is being used as the benchmark. Currently having more national cycle network
+#' than Amsterdam is seen as superfluous if Amsterdam is accepted as the Gold
+#' standard in bicycle infrastructure provision.}
+#' \item{\code{National cycle network status}}{Status of National Cycle Network based on
+#' quintiles of the normalised score. The five categories are High, Good,
+#' Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
+#' 0.4 = Poor, 0.6 = Moderate, 0.8 = Good, 1.0 = High. For instance, if a
+#' location has 85\% the length of Amsterdam it will
+#' categorised as 'High'.}
+#' \item{\code{cycle route to road ratio norm weighted}}{A ratio of
+#' cycle route to road ratio with * 2 weighting. The cycle path to road ratio is deemed
+#' to be *2 more important than the other indexes}
+#' \item{\code{Indicator total}}{The Indicator total is the sum of the normalised ratios}
+#' \item{\code{Total normalised}}{The Total normalised is the sum of the weighted normalised ratios which is also normalised against the max or Amsterdam Indicator total}
+#' \item{\code{Status}}{Status is based on
+#' quintiles of the Total normalised value. The five categories are High, Good,
+#' Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
+#' 0.4 = Poor, 0.6 = Moderate, 0.8 = Good, 1.0 = High. For instance, if a
+#' location has 15\%  the Total normalised value of Amsterdam it will be
+#' categorised as
+#' 'Bad'.}
+#' \item{\code{Confidence}}{The Confidence is a percentage estimate of the
+#' sampling effort and therefore the quality of the underlying map data. It is
+#' based on three features of the bicycle parking data openstreetmap extracted:
+#' The average number of versions of each node, the total number of editors and
+#' the timestamp of the most recent edit.}
+#'   ....to be
+#' completed
 #' }
-#' @examples
+#' #' @examples
 #' bicycleStatus(scotlandAmsterdam)
+#' bicycleStatus(scotlandAmsterdam[1:10,],amsterdamIndex=FALSE)  # ranks first
+#' ten areas in data.frame relative to each other not in comparison to Amsterdam
+#' region.
+#' @section Warning:
+#' Do not operate this function while feeling tired or drowsy ;)
 #' @export
 
 # column order (scotlandAmsterdam data):
