@@ -52,18 +52,19 @@ bicycleData <- function(user=user,
 ##### drop all tables if exists
 dbSendQuery(con, paste("DROP TABLE IF EXISTS shop_scotland_area, bicycle_parking, shop_scotland_poly, shops, shops_point"))
 
+# dbSendQuery(con, paste("DROP TABLE IF EXISTS bicycle_parking")
 ##### cycle parking
 dbSendQuery(con,paste("create table bicycle_parking
 as 
-select  p.covered, p.way, p.osm_id
+select  p.covered, p.way, p.osm_id, p.osm_timestamp, p.osm_version
 from planet_osm_point p
 where p.amenity = 'bicycle_parking'
 union all 
-select  covered, way, osm_id
+select  covered, way, osm_id, osm_timestamp, osm_version 
 from planet_osm_line
 where planet_osm_line.amenity = 'bicycle_parking'
 union all 
-select  covered, way, osm_id
+select  covered, way, osm_id, osm_timestamp, osm_version 
 from planet_osm_polygon
 where planet_osm_polygon.amenity = 'bicycle_parking'"))
 
@@ -72,6 +73,7 @@ dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))
 
 #### Areas update ####
 
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN version NUMERIC"))
 # dbSendQuery(con,paste("update merged SET commuting_by_bicycle = 42 WHERE commuting_by_bicycle IS NULL"))
 # dbSendQuery(con,paste("update merged SET commuting_by_bicycle = CAST (census.bikers as NUMERIC) FROM census WHERE census.name = merged.name"))
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN commuting_by_bicycle NUMERIC"))
@@ -135,6 +137,15 @@ FROM
   bicycle_parking r
 WHERE ST_Contains(merged.way,r.way)
 )"))
+
+# bicycle parking version number
+dbSendQuery(con,paste("UPDATE merged SET version = (SELECT 
+          sum(osm_version) / count(osm_version)
+FROM 
+  bicycle_parking r
+WHERE ST_Contains(merged.way,r.way)
+)"))
+
 
 dbSendQuery(con,paste("UPDATE merged SET editors = 0 WHERE editors IS NULL"))
 
