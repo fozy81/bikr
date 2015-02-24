@@ -99,10 +99,9 @@ sampling effort and therefore the quality of the underlying map data. It is
 based on three features of the bicycle parking data openstreetmap extracted:
 The average number of versions of each node, the total number of editors and
 the timestamp of the most recent edit.}
-  ....to be
-completed
+\item{\code{Rank}}{A rank 1,2,3...N is attributed to each area. '1'
+represents the area with the highest 'Total normalised' value}
 }
-#'
 }
 \description{
 bicycleStatus is used to calculate and classify an index for bicycle
