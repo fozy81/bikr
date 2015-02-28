@@ -238,7 +238,7 @@ dbSendQuery(con,paste("UPDATE merged SET highways = 0 WHERE highways IS NULL"))
 
 ## save file
 system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json"))      
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 57 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
+command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 59 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
 system(command)
 
 # save RData object into package

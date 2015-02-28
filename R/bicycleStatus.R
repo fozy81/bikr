@@ -62,7 +62,6 @@
 #' \item{\code{constructionshighways}}{length in km of construction roads}
 #' }
 #' @usage bicycleStatus(x)
-# @example  \dontrun{scotlandAmsterdam}
 #' @param x Dataframe input from bicycleData function 
 #' @param effort Estimate sampling effort to assess confidence in data quality
 #'   (default=TRUE)
@@ -140,15 +139,12 @@
 #' The average number of versions of each node, the total number of editors and
 #' the timestamp of the most recent edit.}
 #' \item{\code{Rank}}{A rank 1,2,3...N is attributed to each area. '1'
-#' represents the area with the highest 'Total normalised' value}
-#' }
+#' represents the area with the highest 'Total normalised' value}}
 #' @examples
 #' bicycleStatus(scotlandAmsterdam)
-#' bicycleStatus(scotlandAmsterdam[1:10,],amsterdamIndex=FALSE)  # ranks first
-#' ten areas in data.frame relative to each other not in comparison to Amsterdam
-#' region.
+#' bicycleStatus(scotlandAmsterdam[1:10,],amsterdamIndex=FALSE) 
 #' @section Warning:
-#' Do not operate this function while feeling tired or drowsy ;)
+#' Do not operate this function while feeling tired or drowsy
 #' @export
 
 # column order (scotlandAmsterdam data):
@@ -238,7 +234,7 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE){
   
 
    
-  return(x[,c(1,13:max(col(x)))])
+  return(x[,c(1,14:max(col(x)))])
   }
   
  # else # use max of all values passed (instead of using Amsterdam values)
@@ -302,7 +298,7 @@ x$'Confidence' <- (x[,4] + as.numeric(substr(x[,11],1,4))) - 2010
   x$'Rank' <- 1:length(x[,1])
   
 
-return(x[,c(1,13:max(col(x)))])
+return(x[,c(1,14:max(col(x)))])
 }
 
 
