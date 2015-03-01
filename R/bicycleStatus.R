@@ -61,7 +61,7 @@
 #' \item{\code{proposedhighways}}{length in km of proposed roads}
 #' \item{\code{constructionshighways}}{length in km of construction roads}
 #' }
-#' @usage bicycleStatus(x)
+#' @usage bicycleStatus(x,amsterdamIndex=TRUE,effort=TRUE)
 #' @param x Dataframe input from bicycleData function 
 #' @param effort Estimate sampling effort to assess confidence in data quality
 #'   (default=TRUE)
@@ -165,8 +165,8 @@
 bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE){
   # load in reference data from bikr package data 
   if(amsterdamIndex==TRUE){
-  data(scotlandAmsterdam)
-  scotlandAmsterdam
+
+  scotlandAmsterdam <- scotlandAmsterdam
   #  x <- scotlandAmsterdam for testing
   # merge data from Amsterdam with incoming data.frame so Amsterdam Index can be calculated   
   x <- rbind(x, scotlandAmsterdam[scotlandAmsterdam[,1] == 'Stadsregio Amsterdam',])

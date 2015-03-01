@@ -30,8 +30,8 @@ shinyServer(function(input, output, session) {
           
       geojsonFile$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
                                  fill = "true", opacity = 0.9,
-                                fillOpacity = 0.9, color= paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]),
-                                fillColor = paste(d$fillcolor[d$features.properties.name == geojsonFile$features[[i]]$properties$name]))
+                                fillOpacity = 0.9, color= paste(d$fillcolor[d$name == geojsonFile$features[[i]]$properties$name]),
+                                fillColor = paste(d$fillcolor[d$name == geojsonFile$features[[i]]$properties$name]))
     }
     map$addGeoJSON(geojsonFile)
     })
@@ -161,12 +161,12 @@ output$description2  <- renderText({
 
 output$chartOutcome <- renderChart2({
      
-  d <-   merge(d,scotlandAmsterdam,by.x="features.properties.name",by.y="features.properties.name")
+  d <-   merge(d,scotlandAmsterdam,by.x="name",by.y="name")
   
-      d$'Name' <- d$features.properties.name
+      d$'Name' <- d$name
    
         p2 <- dPlot(
-        y = "features.properties.commuting_by_bicycle.x",
+        y = "commuting_by_bicycle.x",
         x = "Status",
         data = d,
         type = "bar",

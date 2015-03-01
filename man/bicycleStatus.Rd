@@ -20,7 +20,7 @@
 \item{\code{constructionshighways}}{length in km of construction roads}
 }}
 \usage{
-bicycleStatus(x)
+bicycleStatus(x,amsterdamIndex=TRUE,effort=TRUE)
 }
 \arguments{
 \item{x}{Dataframe input from bicycleData function}

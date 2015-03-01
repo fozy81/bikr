@@ -246,6 +246,8 @@ library(jsonlite)
 d <- data.frame(fromJSON('/home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json',flatten=T))
 
 scotlandAmsterdam <- d[,c(5,7:20)]
+names(scotlandAmsterdam) <- c("name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructioncyclepath", "editors", "lasteditdate", "proposedroad", "constructionroad","commutingbybicycle","version")
+
 save(scotlandAmsterdam,file="data/scotlandAmsterdam.RData") 
 
 }
