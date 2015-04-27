@@ -3,7 +3,8 @@
 \name{bicycleStatus}
 \alias{bicycleStatus}
 \title{bicycleStatus}
-\format{A data frame with 13 variables in this column order:
+\format{A data frame with 13 variables - column names must match but column
+  order not important:
 \describe{
 \item{\code{name}}{name or unique id of area}
 \item{\code{cyclepath}}{length in km of cycle paths}
@@ -94,7 +95,7 @@ Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
 location has 15\%  the Total normalised value of Amsterdam it will be
 categorised as
 'Bad'.}
-\item{\code{Confidence}}{The Confidence is a percentage estimate of the
+\item{\code{Sampling Effort}}{The Sampling Effort is a percentage estimate of the
 sampling effort and therefore the quality of the underlying map data. It is
 based on three features of the bicycle parking data openstreetmap extracted:
 The average number of versions of each node, the total number of editors and
@@ -139,7 +140,7 @@ to each indicator. The approach is to iterate the classification system to
 more closely align the overall status classification to
 socio-ecomonic-enviromental outcomes.
 
-Each entry in the dataframe is also given a 'Confidence'. In this
+Each entry in the dataframe is also given a 'Sampling effort'. In this
 context, it measures the sampling effort (number of OpenStreetMap
 editors) and the time of last edit to represent uncertainty in the
 quality of the OpenStreetMap data. However, the current method is a fudge but
@@ -155,7 +156,7 @@ within the dataset.
 Do not operate this function while feeling tired or drowsy
 }
 \examples{
-bicycleStatus(scotlandAmsterdam)
-bicycleStatus(scotlandAmsterdam[1:10,],amsterdamIndex=FALSE)
+bicycleStatus(scotlandMsp)
+bicycleStatus(scotlandMsp[1:10,],amsterdamIndex=FALSE)
 }
 

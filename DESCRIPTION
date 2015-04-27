@@ -1,7 +1,7 @@
 Package: bikr
 Type: Package
 Title: Bicycle infrastructure classification
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Date: 2015-01-18
 Author: Tim Foster
 Maintainer: Tim Foster <fozy81@github.com>
