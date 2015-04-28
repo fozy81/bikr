@@ -266,9 +266,9 @@ system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.
 scotlandMsp <- d[d$features.properties.area_code == "COU" | d$features.properties.area_code == "CIT",c(5:6,7:21),]
 scotlandCouncil <- d[d$features.properties.area_code  == "UTA" | d$features.properties.area_code  == "CIT",c(5:6,7:21),]
 
-names(scotlandMsp) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructioncyclepath", "editors", "lasteditdate", "proposedroad", "constructionroad","commutingbybicycle","version","areacode")
-names(scotlandCouncil) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructioncyclepath", "editors", "lasteditdate", "proposedroad", "constructionroad","commutingbybicycle","version","areacode")
-names(d) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructioncyclepath", "editors", "lasteditdate", "proposedroad", "constructionroad","commutingbybicycle","version","areacode")
+names(scotlandMsp) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructionroad", "editors", "lasteditdate", "proposedroad", "constructioncyclepath","commutingbybicycle","version","areacode")
+names(scotlandCouncil) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructionroad", "editors", "lasteditdate", "proposedroad", "constructioncyclepath","commutingbybicycle","version","areacode")
+names(d) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructionroad", "editors", "lasteditdate", "proposedroad", "constructioncyclepath","commutingbybicycle","version","areacode")
  d <- scotlandAmsterdam
 save(scotlandMsp,file="data/scotlandMsp.RData") 
 save(scotlandCouncil,file="data/scotlandCouncil.RData") 

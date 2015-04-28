@@ -27,25 +27,19 @@ e1$fillcolor <- ifelse(e1$Status == "Bad","#bd0026",e1$fillcolor)
 # 
  geojsonFile <- RJSONIO::fromJSON('scotlandMsp.json')
 geojsonFile2 <- RJSONIO::fromJSON('scotlandCouncil.json')
-# d <<- reactive({
-#   admin <-  bicycleStatus(eval(parse(text = paste(input$adminLevel))))
-#   admin$fillcolor <- ifelse( admin$Status == "High","#ffffb2","")
-#   admin$fillcolor <- ifelse( admin$Status == "Good","#fecc5c", admin$fillcolor)
-#   admin$fillcolor <- ifelse( admin$Status == "Moderate","#fd8d3c", admin$fillcolor)
-#   admin$fillcolor <- ifelse( admin$Status == "Poor","#f03b20", admin$fillcolor)
-#   admin$fillcolor <- ifelse( admin$Status == "Bad","#bd0026", admin$fillcolor)
-#   return(admin)
-# })
-# 
-# 
-#  geojsonFile <- reactive({
-#    geojsonFile <- RJSONIO::fromJSON(paste(input$adminLevel,'.json',sep=""))
-#  })
-#  
-
 
 shinyServer(function(input, output, session) {
  
+  sumdata <- reactive({
+    if(input$adminLevel == 'scotlandMsp'){
+      return(scotlandMsp)
+    }
+    if(input$adminLevel == 'scotlandCouncil'){
+      return(scotlandCouncil)
+    }
+  })
+  
+  
   dstatus <- reactive({
     if(input$adminLevel == 'scotlandMsp'){
       return(d1)
@@ -79,27 +73,10 @@ shinyServer(function(input, output, session) {
     
     m = leaflet()  %>%  addTiles("//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
     addGeoJSON(geojson) %>%
-    addCircles(-60, 60, radius = 5e5, layerId = "circle") %>%
     setView(3.911, 56.170, zoom = 5 )
   })
   
-#   map <- createLeafletMap(session, "map")
-# 
-#   session$onFlushed(once=TRUE, function() {
-#     
-#       for (i in 1:length(d[,1])){
-#       
-#       geojsonFile$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
-#                                                             fill = "true", opacity = 0.9,
-#                                                             fillOpacity = 0.9, color= paste(d$fillcolor[d$name == geojsonFile$features[[i]]$properties$name]),
-#                                                             fillColor = paste(d$fillcolor[d$name == geojsonFile$features[[i]]$properties$name]))
-#     }
-# 
-#     map$addGeoJSON(geojsonFile)
-# 
-#    })
-  
-  
+
   values <- reactiveValues(selectedFeature = NULL)
   
   observe({
@@ -128,20 +105,22 @@ shinyServer(function(input, output, session) {
   
   datasetTargetTotal <- reactive({
     d <- dstatus()
-    data <- bicycleTarget(summary=scotlandAmsterdam,status=d,completion=input$num, cost=input$cost)
+    sumdata <- sumdata() 
+    data <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
     data <- sum(as.numeric(as.character(data$'Projected Cost per year £M')))
     data
   })
   
   datasetTarget<- reactive({
     d <- dstatus()
-    datas <- bicycleTarget(summary=scotlandAmsterdam,status=d,completion=input$num, cost=input$cost)
+    sumdata <- sumdata() 
+    datas <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
     datas
   })
   
 
   output$description  <- renderText({
-    if (is.null(values$selectedFeature))
+    if(is.null(values$selectedFeature)){
       d <- dstatus()
       description <- paste("The cycle infrastructure in Scotland consists of ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('cyclepath')]),
                            "km of cycle path (separated from motor-vehicle traffic), ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('bicycleparking')]), 
@@ -149,7 +128,8 @@ shinyServer(function(input, output, session) {
                            "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(mean(d$'cyclepath to road ratio' * 100,digits=0)),
                            "%, this compares to ", round(max(d$'cyclepath to road ratio') * 100,digits=0),"% in the Amsterdam region.",
                            sep="")   
-    
+    return(description)
+      }
   })
   
   
@@ -202,8 +182,8 @@ shinyServer(function(input, output, session) {
     d <- d[d[,1] == values$selectedFeature$name | d[,1] == 'Stadsregio Amsterdam', ]
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
-           p <-  qplot(x = d[,1],  y = d[,18], geom="bar",stat="identity",fill=d[,1],xlab="City",ylab="Bicycle Quality Ratio")) 
-    p <- p + scale_fill_manual(values= sort(d[,23],decreasing=F), name="City", labels=sort(d[,1],decreasing=F))
+           p <-  qplot(x = d$name,  y = d$'Total normalised', geom="bar",stat="identity",fill=d$name,xlab="City",ylab="Bicycle Quality Ratio")) 
+    p <- p + scale_fill_manual(values= sort(d$fillcolor,decreasing=F), name="City", labels=sort(d$name,decreasing=F))
     return(p)
     
   })
@@ -221,19 +201,21 @@ shinyServer(function(input, output, session) {
   },options = list(searching = TRUE,paging = FALSE))
   
   output$measuresTable <- renderDataTable({
-    data <- bicycleMeasures(scotlandAmsterdam)
+    sumdata <- sumdata() 
+    data <- bicycleMeasures(sumdata)
     data
   },options = list(searching = TRUE,paging = FALSE))
   
   output$chartOutcome <- renderChart2({
     d <- dstatus()
-    d <-   merge(d,scotlandAmsterdam,by.x="name",by.y="name")
+    sumdata <- sumdata()
+    d <-   merge(d,sumdata,by.x="name",by.y="name")
     
     d$'Name' <- d$name
     
     p2 <- dPlot(
       
-      y = "commuting_by_bicycle.x",
+      y = "commutingbybicycle.x",
       x = "Status",
       data = d,
       type = "bar",
