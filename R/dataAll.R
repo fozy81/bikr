@@ -1,8 +1,11 @@
 #' scotlandAmtersdam
 #'
-#' Summary of OpenStreetMap data prepared by bicycleClass script which can be found
+#' Summary of OpenStreetMap data prepared by bicycleData script which can be found
 #' in data-raw folder of this package. This summary data can be processed 
-#' by \pkg{bicycleStatus} function. 
+#' by \pkg{bicycleStatus} function. This object contains summary data from both 
+#' MSP area and council areas. This have been split into scotlandMsp and 
+#' scotlandCouncil data files to make display easier in the shiny example. It is
+#' probably possible to use just a single file.
 #' 
 #' @usage scotlandAmsterdam
 #'

@@ -1,4 +1,3 @@
-
 #' Query bicycle data from a database which uses the osm2postgresql schema with all tags h-store activated. 
 #' 
 #' requires OGR2OGR command line tool and access to osm2postgesql database schema
@@ -9,6 +8,56 @@
 #' @param host 'localhost' or port
 
 
+#### Still in development!  ####
+### Needs tidy up ###
+
+#### This file describes how to download data for OpenStreetMap into  postgres database
+
+### To do
+# 0. The Db side can all go in Docker container if anyone wants to reproduce
+# 1. Docker postgis database makfile
+# 2. makefile to download OMS data + areas
+# 3. makefile to create postGIS db
+# 4. Query database
+# 5. Save summary area data into R package
+
+
+### OSM data
+
+system("mkdir /home/tim/R/postGISupdate")
+
+setwd("/home/tim/R/postGISupdate")
+
+download.file("http://download.geofabrik.de/europe/great-britain/scotland-latest.osm.bz2",
+              "scotland-latest.osm.bz2")
+
+system("bzip2 -d /home/tim/R/postGISupdate/scotland-latest.osm.bz2")
+
+download.file("https://s3.amazonaws.com/metro-extracts.mapzen.com/amsterdam_netherlands.osm.bz2", "amsterdam_netherlands.osm.bz2",method="curl")
+
+system("bzip2 -d /home/tim/R/postGISupdate/amsterdam_netherlands.osm.bz2")
+
+
+download.file("https://s3.amazonaws.com/metro-extracts.mapzen.com/seville_spain.osm.bz2", "seville_spain.osm.bz2",method="curl")
+
+system("bzip2 -d /home/tim/R/postGISupdate/seville_spain.osm.bz2")
+
+download.file("https://s3.amazonaws.com/metro-extracts.mapzen.com/prague_czech-republic.osm.bz2", "prague_czech-republic.osm.bz2",method="curl")
+
+system("bzip2 -d /home/tim/R/postGISupdate/prague_czech-republic.osm.bz2")
+
+
+download.file("https://s3.amazonaws.com/metro-extracts.mapzen.com/copenhagen_denmark.osm.bz2", "copenhagen_denmark.osm.bz2",method="curl")
+
+system("bzip2 -d /home/tim/R/postGISupdate/copenhagen_denmark.osm.bz2")
+
+
+### Install into postGIS
+
+system("osmosis --rx /home/tim/R/postGISupdate/scotland-latest.osm --rx /home/tim/R/postGISupdate/amsterdam_netherlands.osm --rx /home/tim/R/postGISupdate/seville_spain.osm --rx /home/tim/R/postGISupdate/prague_czech-republic.osm --rx /home/tim/R/postGISupdate/copenhagen_denmark.osm --merge --merge --merge --merge --wx merged.osm")
+system("osm2pgsql -j -x -s -U tim -S /home/tim/Documents/default.style -d gis2 /home/tim/R/postGISupdate/merged.osm")
+
+system("rm -r /home/tim/R/postGISupdate")
 
 #### database details
 
@@ -42,7 +91,7 @@ con <- dbConnect(dbDriver("PostgreSQL"), user=user,
 
 
 
-#### function
+#### May make a function to call data from db into R pacakge?  
 
 bicycleData <- function(user=user,
                         password=password, dbname=dbname, host=host){
@@ -77,6 +126,8 @@ dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))
 
 #### Areas update ####
 
+  ### Just some queries I've used in testing, hadny for reference:
+  
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN version NUMERIC"))
 # dbSendQuery(con,paste("update merged SET commuting_by_bicycle = 42 WHERE commuting_by_bicycle IS NULL"))
 # dbSendQuery(con,paste("update merged SET commuting_by_bicycle = CAST (census.bikers as NUMERIC) FROM census WHERE census.name = merged.name"))
@@ -261,15 +312,16 @@ command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyap
 system(command)
 # save RData object into package
 library(jsonlite)
-d <- data.frame(fromJSON('/home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json',flatten=T))
+d <- data.frame(jsonlite::fromJSON('/home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json',flatten=T))
 system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json"))  
 scotlandMsp <- d[d$features.properties.area_code == "COU" | d$features.properties.area_code == "CIT",c(5:6,7:21),]
 scotlandCouncil <- d[d$features.properties.area_code  == "UTA" | d$features.properties.area_code  == "CIT",c(5:6,7:21),]
+d2 <- d[d$features.properties.area_code  == "UTA" | d$features.properties.area_code  == "CIT" | d$features.properties.area_code  == "COU",c(5:6,7:21),]
 names(scotlandMsp) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructionroad", "editors", "lasteditdate", "proposedroad", "constructioncyclepath","commutingbybicycle","version","areacode")
 names(scotlandCouncil) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructionroad", "editors", "lasteditdate", "proposedroad", "constructioncyclepath","commutingbybicycle","version","areacode")
-names(d) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructionroad", "editors", "lasteditdate", "proposedroad", "constructioncyclepath","commutingbybicycle","version","areacode")
-scotlandAmsterdam <- d
-save(scotlandMsp,file="data/scotlandMsp.RData") 
-save(scotlandCouncil,file="data/scotlandCouncil.RData") 
-save(scotlandAmsterdam,file="data/scotlandAmsterdam.RData") 
+names(d2) <- c("code","name", "cyclepath", "road", "bicycleparking","area","routes","proposedroutes", "proposedcyclepath", "constructionroad", "editors", "lasteditdate", "proposedroad", "constructioncyclepath","commutingbybicycle","version","areacode")
+scotlandAmsterdam <- d2
+save(scotlandMsp,file="data/scotlandMsp.RData",compress='xz') 
+save(scotlandCouncil,file="data/scotlandCouncil.RData",compress='xz') 
+save(scotlandAmsterdam,file="data/scotlandAmsterdam.RData",compress='xz') 
 }

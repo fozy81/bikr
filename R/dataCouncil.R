@@ -2,7 +2,9 @@
 #'
 #' Summary of OpenStreetMap data prepared by bicycleClass script which can be found
 #' in data-raw folder of this package. This summary data can be processed 
-#' by \pkg{bicycleStatus} function. 
+#' by \pkg{bicycleStatus} function. This object contains summary data from 
+#' council areas to make display easier in the shiny example. It is probably
+#' possible to use just a single file in the form of scotland Amsterdam.
 #' 
 #' @usage scotlandCouncil
 #'
