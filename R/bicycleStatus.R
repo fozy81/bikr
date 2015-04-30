@@ -24,7 +24,7 @@
 #' bicycleData function for detailed breakdown of the OpenStreetMap data 
 #' required for this function.
 #' 
-#' Once all indicators are calculated they are given weights 4:2:1 for
+#' Once all indicators are calculated they are given weights for
 #' Cyclepath, National Cycle Route and Bicycle parking ratios respectively. This
 #' weighting is based on expert opinion and bicycle literature (both of which
 #' are deemed to subjective). Further work at linking bicycle indicators on
@@ -62,12 +62,25 @@
 #' \item{\code{proposedhighways}}{length in km of proposed roads}
 #' \item{\code{constructionshighways}}{length in km of construction roads}
 #' }
-#' @usage bicycleStatus(x,amsterdamIndex=TRUE,effort=TRUE)
+#' @usage
+#' bicycleStatus(x,amsterdamIndex=TRUE,effort=TRUE,bicycleParkingWeight=1.5,
+#' routeWeight=0.8,cyclePathWeight=4,ruralWeight=2)
+#'   
 #' @param x Dataframe input from bicycleData function 
 #' @param effort Estimate sampling effort to assess confidence in data quality
 #'   (default=TRUE)
 #' @param amsterdamIndex Calculate status relative to data for Amsterdam included in
 #'   package (default=TRUE)
+#' @param bicycleParkingWeight Variable for weighting of bicycleparking input
+#'   variable which is reflected in output 'cyclepath to road ratio norm
+#'   weighted' (default=1.5)
+#' @param routeWeight Variable for weighting of routes input which is reflected
+#'   in output 'bicycle route to road ratio norm' (default=0.8)
+#' @param cyclePathWeight Variable for weighting of cyclepath input variable
+#'   which is reflected in output 'cycle route to road ratio norm weighted'
+#'   (default=4)
+#' @param ruralWeight Variable for weighting of ruralness reflected in output
+#'   'rural weighting' (default=2)
 # @param objectives Calculate required improvements based on objective year and
 #   proposed status (default=TRUE)
 # @param measures Calculate indicators and status based on proposed and under
@@ -100,7 +113,7 @@
 #' 0.4 = Poor, 0.6 = Moderate, 0.8 = Good, 1.0 = High. For instance, if a 
 #' location has 60\% the parking of Amsterdam it will
 #' be categorised as 'Moderate'.}
-#' \item{\code{rural weighting }}{Rural weighting is a ratio of the length of
+#' \item{\code{rural weighting}}{Rural weighting is a ratio of the length of
 #' road divided by area. This gives an idea of the road density within a given
 #' area and broadly how rural an area may be. It is thought rural
 #' areas will on balance require less bicycle infrastrucutre because quite
@@ -126,7 +139,9 @@
 #' cycle route to road ratio with * 2 weighting. The cycle path to road ratio is deemed
 #' to be *2 more important than the other indexes}
 #' \item{\code{Indicator total}}{The Indicator total is the sum of the normalised ratios}
-#' \item{\code{Total normalised}}{The Total normalised is the sum of the weighted normalised ratios which is also normalised against the max or Amsterdam Indicator total}
+#' \item{\code{Total normalised}}{The Total normalised is the sum of the
+#' weighted normalised ratios which is also normalised against the max or
+#' Amsterdam Indicator total}
 #' \item{\code{Status}}{Status is based on
 #' quintiles of the Total normalised value. The five categories are High, Good,
 #' Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
@@ -145,7 +160,7 @@
 #' bicycleStatus(scotlandMsp)
 #' bicycleStatus(scotlandMsp[1:10,],amsterdamIndex=FALSE) 
 #' @section Warning:
-#' Do not operate this function while feeling tired or drowsy
+#' Do not operate this function while riding a bicyle
 #' @export
 
 # column order (scotlandMsp data):
@@ -163,7 +178,7 @@
 # 12. proposedhighways
 # 13. constructionhighways
 
-bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE){
+bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeight=1.5,routeWeight=0.8,cyclePathWeight=4,ruralWeight=2){
   # load in reference data from bikr package data 
   
 
@@ -189,19 +204,21 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE){
   x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.6, "Moderate",  x$'Cycle path status')
   x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.4, "Poor",   x$'Cycle path status')
   x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.2, "Bad",   x$'Cycle path status')
-  x$'cyclepath to road ratio norm weighted' <- x$'cyclepath to road ratio norm' * 4
+  x$'cyclepath to road ratio norm weighted' <- x$'cyclepath to road ratio norm' * cyclePathWeight
   
   # normalised cycleparking   
   x$'area to bicycle parking ratio' <- round(x$'bicycleparking' / x$'area',digits=6) 
   x$'area to bicycle parking ratio norm' <- round(x$'area to bicycle parking ratio' / maxValue(x$'area to bicycle parking ratio'),digits=3)
   x$'area to bicycle parking ratio norm' <-  ifelse( x$'area to bicycle parking ratio norm' > 1,1, x$'area to bicycle parking ratio norm')
+  x$'area to bicycle parking ratio norm' <- x$'area to bicycle parking ratio norm' * bicycleParkingWeight
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.8, "Good", "High")
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.6, "Moderate",  x$'Bicycle parking status')
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.4, "Poor",  x$'Bicycle parking status')
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.2, "Bad",    x$'Bicycle parking status')
   
+  
   # rural weighting * 2
-  x$'rural weighting' <- round(round(x$'area' / x$'road',digits=4) / 3000, digits=6) * 2
+  x$'rural weighting' <- round(round(x$'area' / x$'road',digits=4) / 3000, digits=6) * ruralWeight
   
   # route to road ratio  weighting * 2
   x$'cycle route to road ratio' <- round(x$routes / x$road, digits=3) 
@@ -212,7 +229,7 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE){
   x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.4, "Poor",  x$'National cycle network status')
   x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.2, "Bad",    x$'National cycle network status')
   
-  x$'cycle route to road ratio norm weighted' <- x$'cycle route to road ratio norm'  * 2 # weighting
+  x$'cycle route to road ratio norm weighted' <- x$'cycle route to road ratio norm'  * routeWeight # weighting
   
   # 4:2:1 weighting combined for Overall  
   x$'Indicator total' <-   round(x$'cyclepath to road ratio norm weighted' +  x$'cycle route to road ratio norm weighted' +  x$'area to bicycle parking ratio norm' + x$'rural weighting', digits=2)

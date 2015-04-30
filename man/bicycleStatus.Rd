@@ -21,7 +21,8 @@
 \item{\code{constructionshighways}}{length in km of construction roads}
 }}
 \usage{
-bicycleStatus(x,amsterdamIndex=TRUE,effort=TRUE)
+bicycleStatus(x,amsterdamIndex=TRUE,effort=TRUE,bicycleParkingWeight=1.5,
+routeWeight=0.8,cyclePathWeight=4,ruralWeight=2)
 }
 \arguments{
 \item{x}{Dataframe input from bicycleData function}
@@ -31,6 +32,20 @@ package (default=TRUE)}
 
 \item{effort}{Estimate sampling effort to assess confidence in data quality
 (default=TRUE)}
+
+\item{bicycleParkingWeight}{Variable for weighting of bicycleparking input
+variable which is reflected in output 'cyclepath to road ratio norm
+weighted' (default=1.5)}
+
+\item{routeWeight}{Variable for weighting of routes input which is reflected
+in output 'bicycle route to road ratio norm' (default=0.8)}
+
+\item{cyclePathWeight}{Variable for weighting of cyclepath input variable
+which is reflected in output 'cycle route to road ratio norm weighted'
+(default=4)}
+
+\item{ruralWeight}{Variable for weighting of ruralness reflected in output
+'rural weighting' (default=2)}
 }
 \value{
 dataframe containing the following:
@@ -61,7 +76,7 @@ Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
 0.4 = Poor, 0.6 = Moderate, 0.8 = Good, 1.0 = High. For instance, if a
 location has 60\% the parking of Amsterdam it will
 be categorised as 'Moderate'.}
-\item{\code{rural weighting }}{Rural weighting is a ratio of the length of
+\item{\code{rural weighting}}{Rural weighting is a ratio of the length of
 road divided by area. This gives an idea of the road density within a given
 area and broadly how rural an area may be. It is thought rural
 areas will on balance require less bicycle infrastrucutre because quite
@@ -87,7 +102,9 @@ categorised as 'High'.}
 cycle route to road ratio with * 2 weighting. The cycle path to road ratio is deemed
 to be *2 more important than the other indexes}
 \item{\code{Indicator total}}{The Indicator total is the sum of the normalised ratios}
-\item{\code{Total normalised}}{The Total normalised is the sum of the weighted normalised ratios which is also normalised against the max or Amsterdam Indicator total}
+\item{\code{Total normalised}}{The Total normalised is the sum of the
+weighted normalised ratios which is also normalised against the max or
+Amsterdam Indicator total}
 \item{\code{Status}}{Status is based on
 quintiles of the Total normalised value. The five categories are High, Good,
 Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
@@ -129,7 +146,7 @@ relative amount of roads to area as a proxy for population density. See
 bicycleData function for detailed breakdown of the OpenStreetMap data
 required for this function.
 
-Once all indicators are calculated they are given weights 4:2:1 for
+Once all indicators are calculated they are given weights for
 Cyclepath, National Cycle Route and Bicycle parking ratios respectively. This
 weighting is based on expert opinion and bicycle literature (both of which
 are deemed to subjective). Further work at linking bicycle indicators on
@@ -153,7 +170,7 @@ within the dataset.
 }
 \section{Warning}{
 
-Do not operate this function while feeling tired or drowsy
+Do not operate this function while riding a bicyle
 }
 \examples{
 bicycleStatus(scotlandMsp)

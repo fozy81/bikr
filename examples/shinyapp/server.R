@@ -24,19 +24,20 @@ e1$fillcolor <- ifelse(e1$Status == "Bad","#bd0026",e1$fillcolor)
 #geojsonFile <- fromJSON('examples/shinyapp/scotlandAmsterdam.json')
 #fileName <- fromJSON'scotlandAmsterdam.json'
 #geojsonFile <- readChar(fileName, file.info(fileName)$size)
-# 
- geojsonFile <- RJSONIO::fromJSON('scotlandMsp.json')
-geojsonFile2 <- RJSONIO::fromJSON('scotlandCouncil.json')
+ 
+
 
 shinyServer(function(input, output, session) {
  
-  sumdata <- reactive({
-    if(input$adminLevel == 'scotlandMsp'){
-      return(scotlandMsp)
+ 
+   sumdata <- reactive({
+            if(input$adminLevel == 'scotlandMsp'){
+       return(scotlandMsp)
     }
     if(input$adminLevel == 'scotlandCouncil'){
-      return(scotlandCouncil)
+         return(scotlandCouncil)
     }
+ 
   })
   
   
@@ -49,19 +50,31 @@ shinyServer(function(input, output, session) {
             }
    })
  
+  output$areaSelect <- renderUI({
+    if(!is.null(values$selectedFeature)){
+    d <- dstatus() 
+    selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Stadsregio Amsterdam')
+    } 
+     })
+  
   
    geojsondata <- reactive({
-    if(input$adminLevel == 'scotlandMsp'){
-     return(geojsonFile)}
+     
+            if(input$adminLevel == 'scotlandMsp'){
+     return(RJSONIO::fromJSON('scotlandMsp.json'))
+        
+          }
      if(input$adminLevel == 'scotlandCouncil'){
-       return(geojsonFile2)
-       
+       return(RJSONIO::fromJSON('scotlandCouncil.json'))
+  
      }
+     
    })
   
   
   output$map <- renderLeaflet({
-    geojson <- geojsondata()
+    
+      geojson <- geojsondata()
     d <- dstatus()
     for (i in 1:length(d[,1])){
       
@@ -71,10 +84,11 @@ shinyServer(function(input, output, session) {
                                                             fillColor = paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]))
     }
     
-    m = leaflet()  %>%  addTiles("//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
+    m = leaflet()  %>%  addTiles("//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",attribution=HTML('Maps by <a href="http://www.mapbox.com/">Mapbox</a> Map Data (c) <a href="http://www.openstreetmap.org/copyright">OpenStreetMap Contibutors </a>')) %>%
     addGeoJSON(geojson) %>%
     setView(3.911, 56.170, zoom = 5 )
-  })
+
+    })
   
 
   values <- reactiveValues(selectedFeature = NULL)
@@ -111,7 +125,7 @@ shinyServer(function(input, output, session) {
     data
   })
   
-  datasetTarget<- reactive({
+  datasetTarget <- reactive({
     d <- dstatus()
     sumdata <- sumdata() 
     datas <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
@@ -134,10 +148,28 @@ shinyServer(function(input, output, session) {
   
   
   output$rankTable  <- renderDataTable({
-    if (is.null(values$selectedFeature))
-      d <- dstatus()
+         d <- dstatus()
       rankTable <- d[,c('name','Status','Rank')]
-    rankTable
+    return(rankTable)
+  })
+  
+  
+  output$rankStatusTable <- renderUI({
+    if (is.null(values$selectedFeature)){
+    list(h3("Rank Status Table"),dataTableOutput('rankTable'))
+    }
+  })
+  
+  pleaseClickMap <- reactive({
+  if (is.null(values$selectedFeature)){
+    return(h3("Please select area on the map:"))
+  }
+  }
+  )
+  
+  output$pleaseClick <- renderUI({
+    
+ pleaseClickMap()
   })
   
   output$details <- renderText({
@@ -154,12 +186,24 @@ shinyServer(function(input, output, session) {
   })
   
   
-  output$table <- renderDataTable({
-    d <- dstatus()
-    data <- data.frame(cbind(names(d[c(6,10,14,19,20,21,22)]), t(d[d[,1] == values$selectedFeature$name,c(6,10,14,19,20,21,22)])))
-    data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
+  output$comparisonStatusTable <- renderDataTable({
+        d <- dstatus()
+    data <- data.frame(cbind(names(d[,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')]), t(d[d[,1] == values$selectedFeature$name,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')])))
+    data2 <- data.frame(t(d[d[,1] == input$areaName,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')]))
+    data <- cbind(data,data2)
+    names(data) <- c("Quality Element",values$selectedFeature$name,input$areaName)
+    #data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
   },options = list(searching =FALSE,paging = FALSE))
+  
+  output$comparisonTable <- renderUI({
+    if (!is.null(values$selectedFeature)){
+   
+      list(h3("Status Table Comparison"), dataTableOutput('comparisonStatusTable'))
+          }
+      })
+  
+
   
   # out use dimple library: doesn't render correctly:
   #   output$chart2 <- renderChart2({
@@ -179,18 +223,22 @@ shinyServer(function(input, output, session) {
   
   output$chart2 <- renderPlot({
     d <- dstatus()
-    d <- d[d[,1] == values$selectedFeature$name | d[,1] == 'Stadsregio Amsterdam', ]
+    d <- d[d[,1] == values$selectedFeature$name | d[,1] == input$areaName, ]
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
-           p <-  qplot(x = d$name,  y = d$'Total normalised', geom="bar",stat="identity",fill=d$name,xlab="City",ylab="Bicycle Quality Ratio")) 
+           p <-  qplot(x = d$name,  y = d$'Total normalised', geom="bar",stat="identity",fill=d$name,xlab="Area",ylab="Bicycle Quality Ratio (Total normalised)")) 
     p <- p + scale_fill_manual(values= sort(d$fillcolor,decreasing=F), name="City", labels=sort(d$name,decreasing=F))
     return(p)
     
   })
   
-  
-  
-  output$description2  <- renderText({
+  output$comparisonStatusChart <- renderUI({
+    if (!is.null(values$selectedFeature)){
+    list("Comparison Chart", plotOutput("chart2"))
+    }
+  })
+
+    output$description2  <- renderText({
     
     description2 <- paste("The total cost of improving cycle infrastructure to Good status is £ ", datasetTargetTotal()," Million per year",sep="") 
     description2 
@@ -212,22 +260,33 @@ shinyServer(function(input, output, session) {
     d <-   merge(d,sumdata,by.x="name",by.y="name")
     
     d$'Name' <- d$name
-    
+    d$'% Commuting By Bicycle' <- d$commutingbybicycle.x
     p2 <- dPlot(
-      
-      y = "commutingbybicycle.x",
+        y =  '% Commuting By Bicycle' ,
       x = "Status",
       data = d,
       type = "bar",
       bounds = list(x = 50, y = 50, height = 250, width = 300)
     )
     p2$set(dom = "chartOutcome")
+  #  p2$xAxis(orderRule = "Date")
     return(p2)
   })
   
   
+  sandboxData <- reactive({
+        return(bicycleStatus(sumdata(),bicycleParkingWeight=input$bicyleParkingWeight,routeWeight=input$routeWeight,cyclePathWeight=input$bicyclePathWeight,ruralWeight=input$ruralWeight))
+  })
   
-})
+  output$sandboxTable <- renderDataTable({
+    d <- sandboxData()
+    d
+  },options = list(searching = TRUE,paging = FALSE))
+
+  
+  })
+  
+ 
 
 
 
