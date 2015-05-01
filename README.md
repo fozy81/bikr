@@ -1,4 +1,4 @@
-# Bikr
+# bikr
 
 [![Build Status](https://travis-ci.org/fozy81/bikr.svg?branch=master)](https://travis-ci.org/fozy81/bikr)
 
