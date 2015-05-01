@@ -1,0 +1,109 @@
+---
+title: "The bikr package - towards an international framework for classification of bicycle infrastructure"
+author: "Tim Foster"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+## Abstract
+
+Many cities, regions and countries across the world are looking to improve their cycling infrastructure. The perceived outcomes of imrprovements are numberous including human health, pollution, noise, carbon saving and safety. This paper shows an approach to classifying the quality of cycle infrastructure, assessing the imapct of planned changes, projecting what is required in terms of cost and assessing whether the presumed outcomes have been reached. It builds on work in a number of fields including volunteered geographic onformation, dashboards and city monitoring projects and influenced by various classification and rankoing systems. This systems shows a useful platform for comparing, contrasting and planning infrastructure can be created and shared. A number of recommendations for further research are outlined.
+
+## Introduction
+
+Bicycles are the intermediate technology of choice for eleviating many problems of the technologocal advanced societies. The advanced in sedentry, luxurious, rapid and convenient transport has lead to a realisation that exercise, active transport and less 'advanced' forms of transport off-set the..... 
+
+Without some reference points and models to approach improiving the existing transport system it is hard to gauge where a particualrla area performs and what is required to improve it.
+
+Bicycle infrastructure comes from three broad areas
+
+Legislation
+Design Guidelines
+Public support
+
+The simple answer to imrpoving bicycle infrastructure is to legislate improvements. But that still leaves a question of where to start and exactly what outcomes are expected.
+
+
+## The platform
+
+There are a number of existing systems for rating cycle infrassturue...
+
+What data is available....census, national agencies, 
+
+OpenStreetMap...international and lots of data...
+
+Supplement with other data...
+
+R package, postGIS, open-source
+
+## Metrics and classification
+
+sub-metrics, overall metrics, weigthings
+
+### Terminology
+
+cycle path
+bicycle parking area
+national cycle route
+
+### PostGIS Queries
+
+empirical evidence?
+
+ground truthing
+
+## Model
+
+OUtcomes Vs classification
+
+## Use cases
+
+What does a planned improvement delivery
+What are the likely outcomes
+
+## Future developmemt
+
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+library(Rd2roxygen)
+
+str(info <- parse_file("~/github/mypackage/man/bicycleStatus.Rd"))
+print(info)
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))
