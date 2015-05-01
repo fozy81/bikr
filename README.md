@@ -1,6 +1,6 @@
 # Bikr
 
-[![Build Status](https://travis-ci.org/fozy81/mypackage.png?branch=master)](https://travis-ci.org/fozy81/bikr)
+[![Build Status](https://travis-ci.org/fozy81/mypackage.png?branch=master)](https://travis-ci.org/fozy81/mypackage)
 
 The main purpose of the bikr package is to create a objective way to rate the quality of bicycle infrastructure in a given area by comparing to the high standard of bicycle provision found in the Amsterdam region.
 
