@@ -38,7 +38,7 @@ htmlOutput("details"),
            )
   ,tabPanel("Measures", fluidRow(column(6, p("Future forecast - based on proposed and under construction roads and cycle paths in OpenStreetMap"),dataTableOutput('measuresTable')))   
   )
-  ,tabPanel("Outcomes", fluidRow(column(7, "This page is still in development. It will show how the classification relates to the % of public cycling and accident information",showOutput("chartOutcome","dimple")))),
+  ,tabPanel("Outcomes", fluidRow(column(7, "This page is still in development. It will show how the classification relates to the % of public cycling and accident information",plotOutput("chartOutcome")))),
 tabPanel("Sandbox", fluidRow(column(7, "This page allows you to control all the weighting values and create your own weightings",
                                     numericInput("bicyclePathWeight", "Length cycle path separated from traffic:", 4,min = 0, max = 100, step = 0.1),
                                     numericInput("routeWeight", "National cycle network route length:", 0.8,min = 0, max = 100, step = 0.1),

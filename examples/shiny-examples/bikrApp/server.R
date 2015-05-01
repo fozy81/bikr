@@ -121,7 +121,7 @@ shinyServer(function(input, output, session) {
     d <- dstatus()
     sumdata <- sumdata() 
     data <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
-    data <- sum(as.numeric(as.character(data$'Projected Cost per year £M')))
+    data <- sum(as.numeric(as.character(data$'Projected Cost per year GBP')))
     data
   })
   
@@ -254,22 +254,25 @@ shinyServer(function(input, output, session) {
     data
   },options = list(searching = TRUE,paging = FALSE))
   
-  output$chartOutcome <- renderChart2({
+  output$chartOutcome <- renderPlot({
     d <- dstatus()
     sumdata <- sumdata()
-    d <-   merge(d,sumdata,by.x="name",by.y="name")
-    
     d$'Name' <- d$name
+  
+    d <-   merge(d,sumdata,by.x="name",by.y="name")
     d$'% Commuting By Bicycle' <- d$commutingbybicycle.x
-    p2 <- dPlot(
-        y =  '% Commuting By Bicycle' ,
-      x = "Status",
-      data = d,
-      type = "bar",
-      bounds = list(x = 50, y = 50, height = 250, width = 300)
-    )
-    p2$set(dom = "chartOutcome")
-  #  p2$xAxis(orderRule = "Date")
+    p2 <-  qplot(x = d$Status,  y =d$'% Commuting By Bicycle', geom="bar",fill=d$'Status', stat="identity")
+    
+# renderChart... dimple etc
+#     p2 <- dPlot(
+#         y =  '% Commuting By Bicycle' ,
+#       x = "Status",
+#       data = d,
+#       type = "bar",
+#       bounds = list(x = 50, y = 50, height = 250, width = 300)
+#     )
+#     p2$set(dom = "chartOutcome")
+#   #  p2$xAxis(orderRule = "Date")
     return(p2)
   })
   
