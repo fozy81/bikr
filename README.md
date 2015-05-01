@@ -1,4 +1,4 @@
-# Bikr package
+# Bikr
 
 [![Build Status](https://travis-ci.org/fozy81/mypackage.png?branch=master)](https://travis-ci.org/fozy81/bikr)
 
@@ -12,5 +12,3 @@ The primary data source is OpenStreetMap data although it is conceivable other s
 
 The openstreetmap data requires a postgresql database created using osm2postgresql. The script for extracting the relevant data is in data-raw folder but this needs some work to automate - looking at a dockar makefile for the Db backend.
 
-
-![Build Status](https://travis-ci.org/fozy81/mypackage.png?branch=master)
