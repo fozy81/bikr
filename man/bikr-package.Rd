@@ -5,12 +5,13 @@
 \alias{bikr-package}
 \title{Generate bicycle outputs}
 \description{
-Get query data on and Postgresql database using the osmtoposgresql schema and classify based
-on bicycle infrastruture then then compare, constrast and project improvements requirements.
+Based on data from OpenStreetmap data on a postgresql database using the
+osmtoposgresql schema, this package classifies based on bicycle infrastruture
+then then compare, constrast and project improvements requirements.
 }
 \details{
 The only function you're likely to need from \pkg{bikr} is
-\code{\link{bicycleStatus}}. Otherwise refer to the vignettes to see
-how to format the documentation.
+\code{\link{bicycleStatus}}. Refer to the demo website to see how the package
+works how to format the documentation.
 }
 

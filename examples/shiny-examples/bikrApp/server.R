@@ -137,8 +137,8 @@ shinyServer(function(input, output, session) {
     if(is.null(values$selectedFeature)){
       d <- dstatus()
       description <- paste("The cycle infrastructure in Scotland consists of ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('cyclepath')]),
-                           "km of cycle path (separated from motor-vehicle traffic), ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('bicycleparking')]), 
-                           " * bicycle parking areas and ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('routes')]),
+                           "km of cycle path (separated from motor-vehicle traffic), approximately ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('bicycleparking')]), 
+                           " bicycle parking spaces and ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('routes')]),
                            "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(mean(d$'cyclepath to road ratio'[d$areacode == 'COU' | d$areacode == 'UTA'] * 100,digits=0)),
                            "%, this compares to ", round(max(d$'cyclepath to road ratio'[d$name == 'Stadsregio Amsterdam'] * 100,digits=0)),"% in the Amsterdam region.",
                            sep="")   
@@ -255,14 +255,17 @@ shinyServer(function(input, output, session) {
   },options = list(searching = TRUE,paging = FALSE))
   
   output$chartOutcome <- renderPlot({
-    d <- dstatus()
+    d <- dstatus()  
     sumdata <- sumdata()
     d$'Name' <- d$name
-  
     d <-   merge(d,sumdata,by.x="name",by.y="name")
     d$'% Commuting By Bicycle' <- d$commutingbybicycle.x
-    p2 <-  qplot(x = d$Status,  y =d$'% Commuting By Bicycle', geom="bar",fill=d$'Status', stat="identity")
-    
+    d <- d[with(d,order(d$'Total normalised')),]
+    d$name <- as.factor(d$name)
+    d$name <- factor(d$name, levels = d$name[order(d$'Total normalised')])
+    p2 <-  qplot(x = d$name,  y= d$'% Commuting By Bicycle', geom="bar",fill=d$'Status', stat="identity",xlab="Area",ylab="Percentage communting by bicycle") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
 # renderChart... dimple etc
 #     p2 <- dPlot(
 #         y =  '% Commuting By Bicycle' ,

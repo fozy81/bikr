@@ -51,7 +51,7 @@
 #' \item{\code{name}}{name or unique id of area}
 #' \item{\code{cyclepath}}{length in km of cycle paths}
 #' \item{\code{road}}{total length in km of paved roads}
-#' \item{\code{bicycleparking}}{number of bicycle parking points}
+#' \item{\code{bicycleparking}}{number of bicycle parking spaces}
 #' \item{\code{area}}{Area in hectares of polygon being assessed}
 #' \item{\code{routes}}{length in km of proposed Nation cycle route}
 #' \item{\code{proposedroutes}}{length in km of proposed Nation cycle route}
@@ -98,7 +98,7 @@
 #' \item{\code{cyclepath to road ratio norm weighted}}{A ratio of
 #' cycle path to road with * 4 weighting. The cycle path to raod ratio is deemed
 #' to be *4 more important than the other indexes}
-#' \item{\code{area to bicycle parking ratio}}{The number of cycle parking areas
+#' \item{\code{area to bicycle parking ratio}}{The number of cycle parking spaces
 #' per hectare}
 #' \item{\code{area to bicycle parking ratio norm}}{The number of
 #' cycle parking areas per hectare normalised against max value or 
@@ -179,24 +179,23 @@
 # 13. constructionhighways
 
 bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeight=1.5,routeWeight=0.8,cyclePathWeight=4,ruralWeight=2){
-  # load in reference data from bikr package data 
-  
 
-  scotlandAmsterdam <- scotlandAmsterdam
   #  x <- scotlandAmsterdam for testing
   #  x <- scotlandMsp for testing
 
   if(amsterdamIndex==TRUE){
-
+    # require reference data file from bikr package to allow comaprison against Amsterdam values
+    scotlandAmsterdam <- scotlandAmsterdam
+    # set max value to standardise against as Amsterdam 
      maxValue <- function(y) return (y[x$name == 'Stadsregio Amsterdam'])
   }
   if(amsterdamIndex==FALSE){
-   
+    # set max value to standardise against as max value in list/vector
   maxValue <- function(x) return(max(x))
   
   }
   
-  #normalised cyclepath ratioweighting * 4
+  #normalised cyclepath ratioweighting
   x$'cyclepath to road ratio' <-   round(x$'cyclepath' / x$'road' ,digits=3)  
   x$'cyclepath to road ratio norm' <- round(x$'cyclepath to road ratio' / maxValue(x$'cyclepath to road ratio') ,digits=3)
   x$'cyclepath to road ratio norm' <- ifelse(x$'cyclepath to road ratio norm'> 1,1,x$'cyclepath to road ratio norm') 
@@ -216,11 +215,10 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.4, "Poor",  x$'Bicycle parking status')
   x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.2, "Bad",    x$'Bicycle parking status')
   
-  
-  # rural weighting * 2
+  # rural weighting
   x$'rural weighting' <- round(round(x$'area' / x$'road',digits=4) / 3000, digits=6) * ruralWeight
   
-  # route to road ratio  weighting * 2
+  # route to road ratio  weighting
   x$'cycle route to road ratio' <- round(x$routes / x$road, digits=3) 
   x$'cycle route to road ratio norm' <- round( x$'cycle route to road ratio'  / maxValue(x$'cycle route to road ratio'),digits=2)
   x$'cycle route to road ratio norm' <-  ifelse( x$'cycle route to road ratio norm' >1 ,1, x$'cycle route to road ratio norm')  
@@ -231,7 +229,7 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   
   x$'cycle route to road ratio norm weighted' <- x$'cycle route to road ratio norm'  * routeWeight # weighting
   
-  # 4:2:1 weighting combined for Overall  
+  # weighting combined for Overall status 
   x$'Indicator total' <-   round(x$'cyclepath to road ratio norm weighted' +  x$'cycle route to road ratio norm weighted' +  x$'area to bicycle parking ratio norm' + x$'rural weighting', digits=2)
   x$'Total normalised' <- round(x$'Indicator total' /   maxValue(x$'Indicator total'),digits=2)
   
@@ -241,7 +239,7 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   x$'Status' <- ifelse(x$'Total normalised' <= 0.4, "Poor",  x$'Status')
   x$'Status' <- ifelse(x$'Total normalised' <= 0.2, "Bad",   x$'Status')
   if(effort==TRUE){
-  # Sampling Effort needs reworking/refactoring e.g. add an area size biase instead of this fudge:  
+  # Sampling Effort 
     x$'Sampling Effort editors' <- round(x$editors / x$area, digits=7) 
      x$'Sampling Effort editors norm'  <-  round(x$'Sampling Effort editors' / x$'rural weighting',digits=7)
       x$'Sampling Effort editors norm' <- round( x$'Sampling Effort editors norm' / maxValue(x$'Sampling Effort editors norm'),digits=7)
@@ -262,27 +260,25 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   x$'Sampling Effort' <- 100 / maxValue(x$'Sampling Effort') * x$'Sampling Effort'
   x$'Sampling Effort' <- unlist(lapply(x$'Sampling Effort',function(y){
     if (y < 30){
-            return(y + 30)
+            return(y + 30)  # fudge factor for very low scores - could improve...
     }
-    else return(y) # fudge factor for very low scores - could improve...
+    else return(y)
   }))
   
   x$'Sampling Effort' <-   paste(round(x$'Sampling Effort',digits=2),"%",sep="")
+  }
   
-}
   x$'Description' <- paste("The cycle infrastructure in ", x$name," consists of ",x$cyclepath,
                            "km of cycle path (separated from motor-vehicle traffic), ",x$bicycleparking, 
-                           " bicycle parking areas and ",x$routes,
+                           " bicycle parking spaces and ",x$routes,
                            "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(x$'cyclepath to road ratio' * 100,digits=0),
-                           "%, this compares to ", round(maxValue(x$'cyclepath to road ratio')* 100,digits=0),"% in ",x$name[x$'cyclepath to road ratio' == max(x$'cyclepath to road ratio')],".",
+                           "%, this compares to ", round(maxValue(x$'cyclepath to road ratio')* 100,digits=0),"% in ",x$name[x$'cyclepath to road ratio' == maxValue(x$'cyclepath to road ratio')],".",
                            sep="")  
   
   # rank results  
   x <-  x[with(x, order(x$'Total normalised',decreasing = T )), ]
   x$'Rank' <- 1:length(x[,1])
 
-  
   return(x[,c('name','commutingbybicycle','version','areacode','cyclepath to road ratio','cyclepath to road ratio norm','Cycle path status','cyclepath to road ratio norm weighted','area to bicycle parking ratio','area to bicycle parking ratio norm','Bicycle parking status','rural weighting','cycle route to road ratio','cycle route to road ratio norm','National cycle network status','cycle route to road ratio norm weighted','Indicator total','Total normalised','Status','Sampling Effort version norm','Sampling Effort','Description','Rank')])
- # return(x[1,c(1,14,15:31,35:max(col(x)))])
 }
   

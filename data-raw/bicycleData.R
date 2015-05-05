@@ -96,33 +96,33 @@ con <- dbConnect(dbDriver("PostgreSQL"), user=user,
 bicycleData <- function(user=user,
                         password=password, dbname=dbname, host=host){
   
-  
+  library(RODBC)
   library(RPostgreSQL)
   
   con <- dbConnect(dbDriver("PostgreSQL"), user=user,
                    password=password, dbname=dbname, host=host)
 
 ##### drop all tables if exists
-dbSendQuery(con, paste("DROP TABLE IF EXISTS shop_scotland_area, bicycle_parking, shop_scotland_poly, shops, shops_point"))
+dbSendQuery(con, paste("DROP TABLE IF EXISTS shop_scotland_area, bicycle_parking, bicycle, shop_scotland_poly, shops, shops_point"))
 
-# dbSendQuery(con, paste("DROP TABLE IF EXISTS bicycle_parking")
+# dbSendQuery(con, paste("DROP TABLE IF EXISTS bicycle_parking, bicycle"))
 ##### cycle parking
 dbSendQuery(con,paste("create table bicycle_parking
 as 
-select  p.covered, p.way, p.osm_id, p.osm_timestamp, p.osm_version, p.osm_uid
+select  p.covered, p.way, p.osm_id, p.osm_timestamp, p.osm_version, p.osm_uid, p.tags->'capacity' capacity
 from planet_osm_point p
 where p.amenity = 'bicycle_parking'
 union all 
-select  covered, way, osm_id, osm_timestamp, osm_version, osm_uid
+select  covered, way, osm_id, osm_timestamp, osm_version, osm_uid, tags->'capacity' capacity
 from planet_osm_line
 where planet_osm_line.amenity = 'bicycle_parking'
 union all 
-select  covered, way, osm_id, osm_timestamp, osm_version,osm_uid
+select  covered, way, osm_id, osm_timestamp, osm_version,osm_uid, tags->'capacity' capacity
 from planet_osm_polygon
 where planet_osm_polygon.amenity = 'bicycle_parking'"))
 
 dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))           
-            
+ dbSendQuery(con,paste("ALTER TABLE bicycle_parking ADD COLUMN cap NUMERIC"))      
 
 #### Areas update ####
 
@@ -255,7 +255,23 @@ dbSendQuery(con,paste("UPDATE merged SET area = (SELECT ST_Area(ST_Transform(mer
                            )"))
 
 # bicycle parking
-dbSendQuery(con,paste("UPDATE merged SET bicycle_pa = (SELECT count(osm_id)    
+# get median bicycle capacity value
+  
+bicycle<-  dbGetQuery(con,paste("SELECT *
+                                     FROM bicycle_parking
+                                                 "))
+
+
+bicycle$capacity <- as.numeric(capacityValues$capacity)
+bicycleMedian <- median(bicycle$capacity, na.rm=T)
+
+bicycle$capacity[is.na(capacityValues$capacity)] <- bicycleMedian
+dbWriteTable(conn=con,  name = 'bicycle', value=bicycle, overwrite=T)
+dbSendQuery(con,paste("update bicycle_parking SET cap = CAST (bicycle.capacity as NUMERIC) FROM bicycle WHERE bicycle.osm_id = bicycle_parking.osm_id"))
+
+dbSendQuery(con,paste("update bicycle_parking SET capacity = CAST (capacity as NUMERIC)"))
+
+dbSendQuery(con,paste("UPDATE merged SET bicycle_pa = (SELECT sum(cap)    
                                      FROM bicycle_parking
                             WHERE ST_Intersects(bicycle_parking.way,merged.way)
                          )"))
@@ -299,21 +315,21 @@ NOT r.highway = 'service')"))
 dbSendQuery(con,paste("UPDATE merged SET highways = 0 WHERE highways IS NULL"))
 
 ## save file
-system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json"))      
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
+system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json"))      
+command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
 system(command)
 
-system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandMsp.json"))  
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyapp/scotlandMsp.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326 -where \"area_code IN ('COU','CIT')\" ",sep="")
+system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandMsp.json"))  
+command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandMsp.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326 -where \"area_code IN ('COU','CIT')\" ",sep="")
 system(command)
 
-system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandCouncil.json"))  
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shinyapp/scotlandCouncil.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326 -where \"area_code IN ('UTA','CIT')\" ",sep="")
+system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandCouncil.json"))  
+command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandCouncil.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326 -where \"area_code IN ('UTA','CIT')\" ",sep="")
 system(command)
 # save RData object into package
 library(jsonlite)
-d <- data.frame(jsonlite::fromJSON('/home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json',flatten=T))
-system(paste("rm /home/tim/github/mypackage/examples/shinyapp/scotlandAmsterdam.json"))  
+d <- data.frame(jsonlite::fromJSON('/home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json',flatten=T))
+system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json"))  
 scotlandMsp <- d[d$features.properties.area_code == "COU" | d$features.properties.area_code == "CIT",c(5:6,7:21),]
 scotlandCouncil <- d[d$features.properties.area_code  == "UTA" | d$features.properties.area_code  == "CIT",c(5:6,7:21),]
 d2 <- d[d$features.properties.area_code  == "UTA" | d$features.properties.area_code  == "CIT" | d$features.properties.area_code  == "COU",c(5:6,7:21),]

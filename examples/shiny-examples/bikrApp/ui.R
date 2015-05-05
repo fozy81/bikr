@@ -12,7 +12,7 @@ shinyUI(
 tags$div(
   HTML('<a href="https://github.com/fozy81/bikr"><img style="position: absolute; top: 25; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>')),
 htmlOutput("details"),
-                    fluidRow(column(7,tags$style(type="text/css",
+                    fluidRow(column(7, offset = 1,tags$style(type="text/css",
                                                  ".shiny-output-error { visibility: hidden; }",
                                                  ".shiny-output-error:before { visibility: hidden; }"
                     ),hr(),
@@ -23,7 +23,7 @@ htmlOutput("details"),
                      uiOutput('areaSelect'), 
                     uiOutput('comparisonTable')),
                     
-                    fluidRow(column(7,uiOutput("comparisonStatusChart")
+                    fluidRow(column(7, offset = 1, uiOutput("comparisonStatusChart")
                     )))
                     
            )),tabPanel("Objectives", fluidRow( column(6, p("Target objective of Good status (80% of Amsterdam level) based on number of years selected and cost per km of cycle path"),
@@ -38,12 +38,12 @@ htmlOutput("details"),
            )
   ,tabPanel("Measures", fluidRow(column(6, p("Future forecast - based on proposed and under construction roads and cycle paths in OpenStreetMap"),dataTableOutput('measuresTable')))   
   )
-  ,tabPanel("Outcomes", fluidRow(column(7, "This page is still in development. It will show how the classification relates to the % of public cycling and accident information",plotOutput("chartOutcome")))),
-tabPanel("Sandbox", fluidRow(column(7, "This page allows you to control all the weighting values and create your own weightings",
-                                    numericInput("bicyclePathWeight", "Length cycle path separated from traffic:", 4,min = 0, max = 100, step = 0.1),
-                                    numericInput("routeWeight", "National cycle network route length:", 0.8,min = 0, max = 100, step = 0.1),
-                                    numericInput("bicyleParkingWeight", "Bicycle parking areas:", 1.5,min = 0, max = 100, step = 0.1),
+  ,tabPanel("Outcomes", fluidRow(column(7, "This page is still in development. It will show how the classification relates to the % of public cycling and accident information etc. Only works with MSP areas for % communting",plotOutput("chartOutcome")))),
+tabPanel("Sandbox", fluidRow(column(7, "Each of the three factors assessed (Length of cycle path, length of NCN and bicycle parking) are given subjective weightings to increase or decrease their relative importance in the overall status. This page allows you to control all the weighting values and create your own weightings",
+                                    numericInput("bicyclePathWeight", "Cycle path length weighting:", 4,min = 0, max = 100, step = 0.1),
+                                    numericInput("routeWeight", "National cycle network route length weighting:", 0.8,min = 0, max = 100, step = 0.1),
+                                    numericInput("bicyleParkingWeight", "Bicycle parking spaces weighting:", 1.5,min = 0, max = 100, step = 0.1),
                                     "The default ruralness weighting decreases the amount of provision required in rural areas as there tends to be much more road length per person in rural areas and thus quieter roads",
                                     numericInput("ruralWeight", "Ruralness weighting:", 2,min = 0, max = 100, step = 0.1),
                                     dataTableOutput('sandboxTable')))),
-tabPanel("Scenario Planning", fluidRow(column(7, "This page is still in development. It's hoped it will highlight area of the most benefit to improve")))))
+tabPanel("Scenario Planning", fluidRow(column(7, "This page is still in development. It's hoped it will highlight areas of the most benefit to improve")))))

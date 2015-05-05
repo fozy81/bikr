@@ -9,7 +9,7 @@
 \item{\code{name}}{name or unique id of area}
 \item{\code{cyclepath}}{length in km of cycle paths}
 \item{\code{road}}{total length in km of paved roads}
-\item{\code{bicycleparking}}{number of bicycle parking points}
+\item{\code{bicycleparking}}{number of bicycle parking spaces}
 \item{\code{area}}{Area in hectares of polygon being assessed}
 \item{\code{routes}}{length in km of proposed Nation cycle route}
 \item{\code{proposedroutes}}{length in km of proposed Nation cycle route}
@@ -61,7 +61,7 @@ on quintiles}
 \item{\code{cyclepath to road ratio norm weighted}}{A ratio of
 cycle path to road with * 4 weighting. The cycle path to raod ratio is deemed
 to be *4 more important than the other indexes}
-\item{\code{area to bicycle parking ratio}}{The number of cycle parking areas
+\item{\code{area to bicycle parking ratio}}{The number of cycle parking spaces
 per hectare}
 \item{\code{area to bicycle parking ratio norm}}{The number of
 cycle parking areas per hectare normalised against max value or
