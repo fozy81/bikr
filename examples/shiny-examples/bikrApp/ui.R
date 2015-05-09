@@ -26,14 +26,15 @@ htmlOutput("details"),
                     fluidRow(column(7, offset = 1, uiOutput("comparisonStatusChart")
                     )))
                     
-           )),tabPanel("Objectives", fluidRow( column(6, p("Target objective of Good status (80% of Amsterdam level) based on number of years selected and cost per km of cycle path"),
-                                                      htmlOutput('description2'),
+           )),tabPanel("Objectives", fluidRow( column(6, p("The table below displays the target length in km of extra cycle path required to reach 80% level of provision found in Amsterdam region or in other words 'Good' status according to this classification scheme. By altering the values selected below, you can control how quickly you wish to reach 'Good status' and set a default for the average cost of creating cycle path per km. These values determine the 'Projected Cost per year in GBP'."),
+                                                      
                                                       numericInput("num", 
-                                                                   label = p("Number of years to reach objective:"), 
-                                                                   value = 7))),hr(),
+                                                                   label = p("Set the number of years to reach objective:"), 
+                                                                   value = 15))),hr(),
                        fluidRow( column(6, (numericInput("cost", 
-                                                         label = p("Average Cost £ per km of cycle path:"), 
-                                                         value = 200000)))),           
+                                                         label = p("Set the value for the average cost £ per km of cycle path:"), 
+                                                         value = 150000)))),
+                       htmlOutput('description2'),
                        fluidRow(column(9, dataTableOutput('table2')))   
            )
   ,tabPanel("Measures", fluidRow(column(6, p("Future forecast - based on proposed and under construction roads and cycle paths in OpenStreetMap"),dataTableOutput('measuresTable')))   

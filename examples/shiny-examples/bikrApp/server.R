@@ -121,7 +121,7 @@ shinyServer(function(input, output, session) {
     d <- dstatus()
     sumdata <- sumdata() 
     data <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
-    data <- sum(as.numeric(as.character(data$'Projected Cost per year GBP')))
+    data <- sum(as.numeric(as.character(data$'Projected Cost per year Million GBP'[data$Code == 'COU' | data$Code == 'UTA'])))
     data
   })
   
@@ -240,12 +240,14 @@ shinyServer(function(input, output, session) {
 
     output$description2  <- renderText({
     
-    description2 <- paste("The total cost of improving cycle infrastructure to Good status is £ ", datasetTargetTotal()," Million per year",sep="") 
+    description2 <- paste("Based on the values set above, the total cost of improving cycle infrastructure in Scotland to Good status is £ ", datasetTargetTotal()," Million per year",sep="") 
     description2 
   })
   
   output$table2 <- renderDataTable({
-    datasetTarget() 
+  data <-  datasetTarget() 
+  data$Code <- NULL
+  data
   },options = list(searching = TRUE,paging = FALSE))
   
   output$measuresTable <- renderDataTable({

@@ -19,10 +19,11 @@ bicycleTarget(summary,status,completion=7, cost=150000)
 dataframe containing the following:
 \describe{
 \item{\code{Name}}{name or unique id of area}
+\item{\code{Code}}{name or unique id of area}
 \item{\code{Cycle Path km increase target non-rural bias}}{Cycle Path km increase target non-rural bias}
 \item{\code{Cycle Path km increase target}}{Cycle Path km increase target}
 \item{\code{Yearly km increase target}}{Yearly km increase target}
-\item{\code{Projected Cost per year GBP}}{Projected Cost per year GBP}
+\item{\code{Projected Cost per year Million GBP}}{Projected Cost per year Million GBP}
 }
 }
 \description{

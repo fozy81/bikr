@@ -17,10 +17,11 @@
 #' @return dataframe containing the following:
 #' \describe{
 #' \item{\code{Name}}{name or unique id of area} 
+#' \item{\code{Code}}{name or unique id of area} 
 #' \item{\code{Cycle Path km increase target non-rural bias}}{Cycle Path km increase target non-rural bias}
 #' \item{\code{Cycle Path km increase target}}{Cycle Path km increase target}
 #' \item{\code{Yearly km increase target}}{Yearly km increase target}
-#' \item{\code{Projected Cost per year GBP}}{Projected Cost per year GBP}
+#' \item{\code{Projected Cost per year Million GBP}}{Projected Cost per year Million GBP}
 #' }
 #' @examples
 #' bicycleTarget(scotlandMsp,bicycleStatus(scotlandMsp))
@@ -58,8 +59,8 @@ status$'Yearly km increase target' <- round( status$'Cycle Path km increase targ
   
 status$'Projected Cost per year GBP' <- round(status$'Cycle Path km increase target' * (cost/1000000) / completion ,digits=2)
 
-  x <- data.frame(cbind(status[,1],status$'Cycle Path km increase target non-rural bias', status$'Cycle Path km increase target',status$'Yearly km increase target',status$'Projected Cost per year GBP' ))
-  names(x) <- c("Name","Cycle Path km increase target non-rural bias","Cycle Path km increase target", "Yearly km increase target","Projected Cost per year GBP")
+  x <- data.frame(cbind(status$name,status$areacode.x ,status$'Cycle Path km increase target non-rural bias', status$'Cycle Path km increase target',status$'Yearly km increase target',status$'Projected Cost per year GBP' ))
+  names(x) <- c("Name","Code","Cycle Path km increase target (no rural bias)","Cycle Path km increase target (with rural bias)", "Yearly km increase target","Projected Cost per year Million GBP")
 return(x)
 #  date <- Sys.time()
  # year <- format(date, "%Y")
