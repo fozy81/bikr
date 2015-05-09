@@ -263,7 +263,8 @@ shinyServer(function(input, output, session) {
     d <- d[with(d,order(d$'Total normalised')),]
     d$name <- as.factor(d$name)
     d$name <- factor(d$name, levels = d$name[order(d$'Total normalised')])
-    p2 <-  qplot(x = d$name,  y= d$'% Commuting By Bicycle', geom="bar",fill=d$'Status', stat="identity",xlab="Area",ylab="Percentage communting by bicycle") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    Overall_Status <- d$'Status'
+    p2 <-  qplot(x = d$name,  y= d$'% Commuting By Bicycle', geom="bar",fill=Overall_Status, stat="identity",xlab="Area",ylab="Percentage communting by bicycle") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
 
 # renderChart... dimple etc

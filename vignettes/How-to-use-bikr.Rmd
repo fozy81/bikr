@@ -1,5 +1,5 @@
 ---
-title: "HOw to use the bikr package"
+title: "How to use the bikr package"
 author: "Tim Foster"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -11,43 +11,36 @@ vignette: >
 
 ## This vignette will describe how to use the bikr package etc
 
+# Getting started
 
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+First you need some bicycle. Type 
 
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
+``demodata <- scotlandMsp ``
 
-## Figures
+in to the R console and press return. You now have a data object called demodata containing data from Scotland parliament constituencies plus a very examplar cities from around the Europe.
 
-The figure sizes have been customised so that you can easily put two images side-by-side. 
+The data has been extracted from the OpenStreetMap dataset. This dataset is provided by thousands of volunteers from around the world. It is a particuarlly good source of data on cycling infrastrucutre and it really the best and only resource of world wide bicycle infrastructure data. It can be patvchy in places but for many coutnries is of a high quality. I thoroughly recommend you try editing OpenStreetMap and adding to the map in your area. By editing OpenStreetMap you will gain a better understanding of the data we are using in this package.
 
-```{r, fig.show='hold'}
-library(Rd2roxygen)
+The ``demoData`` dataframe has information about the length of national cycle routes, bicycle parking and the total length of bicycle path in each area. The demo dataset also has supplementary data on the number of people commuting by bicycle. This was gained for census and other information where available. The supplementary data isn't required for any of the functions in the package but we will use it later in the vignette to validate the functions to some extent. 
 
-str(info <- parse_file("~/github/mypackage/man/bicycleStatus.Rd"))
-print(info)
-plot(1:10)
-plot(10:1)
-```
+Now we have some data, we can run our first function:
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+``demoStatus <- bicycleStatus(demodata)``
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
+The demoStatus object is a dataframe which has classified the 
 
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
 
-## More Examples
 
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
 
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
 
-Also a quote using `>`:
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+
+
+
+
+
+
+
+
+
+

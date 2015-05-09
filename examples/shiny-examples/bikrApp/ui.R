@@ -18,7 +18,7 @@ htmlOutput("details"),
                     ),hr(),
                     p("This site uses bicycle infrastructure data from OpenStreetMap to classify the level of provision in a given area. The classification is created by standardising against data from Amsterdam region as a reference condition of 'High' status."),
                     htmlOutput('description'),
-                    selectInput("adminLevel","Admin Level",choices = c("Scottish Parliamentary Constituencies" = "scotlandMsp","Scottish Councils Areas" = "scotlandCouncil"),selected = 'scotlandCouncil'), 
+                    selectInput("adminLevel","Admin Level",choices = c("Scottish Parliamentary Constituencies" = "scotlandMsp","Scottish Councils Areas" = "scotlandCouncil"),selected = 'scotlandMsp'), 
                     uiOutput('rankStatusTable'),
                      uiOutput('areaSelect'), 
                     uiOutput('comparisonTable')),
@@ -38,7 +38,7 @@ htmlOutput("details"),
            )
   ,tabPanel("Measures", fluidRow(column(6, p("Future forecast - based on proposed and under construction roads and cycle paths in OpenStreetMap"),dataTableOutput('measuresTable')))   
   )
-  ,tabPanel("Outcomes", fluidRow(column(7, "This page is still in development. It will show how the classification relates to the % of public cycling and accident information etc. Only works with MSP areas for % communting",plotOutput("chartOutcome")))),
+  ,tabPanel("Outcomes", fluidRow(column(7, "This page is still in development. It will show how the classification relates to the % of public cycling and accident information etc. Only works with MSP areas for % communting - scottish census stats for council areas for % commuting by bicycle will be added in future",plotOutput("chartOutcome")))),
 tabPanel("Sandbox", fluidRow(column(7, "Each of the three factors assessed (Length of cycle path, length of NCN and bicycle parking) are given subjective weightings to increase or decrease their relative importance in the overall status. This page allows you to control all the weighting values and create your own weightings",
                                     numericInput("bicyclePathWeight", "Cycle path length weighting:", 4,min = 0, max = 100, step = 0.1),
                                     numericInput("routeWeight", "National cycle network route length weighting:", 0.8,min = 0, max = 100, step = 0.1),
