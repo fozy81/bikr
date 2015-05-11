@@ -1,5 +1,5 @@
 ---
-title: "The bikr package - towards an international framework for classification of bicycle infrastructure"
+title: "The bikr package - towards a collaborative platform for bicycle infrastructure classification and analysis"
 author: "Tim Foster"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -11,11 +11,11 @@ vignette: >
 
 ## Abstract
 
-Many cities, regions and countries across the world are looking to improve their cycling infrastructure. The perceived outcomes of improvements are numerous including human health, air pollution, traffic noise reduction, carbon saving and cyclist/pedestrian safety. This paper shows an approach to classifying the quality of cycle infrastructure, assessing the impact of planned changes, projecting what is required in terms of cost and assessing whether the presumed outcomes have been reached. It builds on work in a number of fields including volunteered geographic information (VGI), digital dashboard design and city monitoring projects and is influenced by various classification, ranking and index metrics. This systems shows a useful platform for comparing, contrasting and planning infrastructure can be created and shared. A number of recommendations for further research are outlined.
+Many cities, regions and countries across the world are looking to improve their cycling infrastructure. The perceived outcomes of improvements are numerous including human health, air pollution, traffic noise reduction, carbon saving and cyclist/pedestrian safety. This paper shows an approach to classifying the quality of cycle infrastructure, assessing the impact of planned changes, projecting what is required in terms of cost and assessing whether the presumed outcomes have been reached. It builds on work in a number of fields including volunteered geographic information (VGI), digital dashboard design and city monitoring projects and is influenced by various classification, ranking and index metrics. This systems demostrates how a platform for comparing, contrasting and planning infrastructure can be created and shared. A number of recommendations for further research are outlined.
 
 ## Introduction
 
-Bicycles are the 'intermediate technology' of choice for alleviating many problems caused by heavily engineered and industrial forms of transportation. The advances in sedentary and inactive means of  transport has lead to a realisation that the potential benefits of speed, cost and efficiency of these devices can overlook the benefits inherent in active transport and less 'advanced' forms of transport such as human health and well-being, air pollution reduction, and overall lower environmental footprints. 
+Bicycles are the 'intermediate technology' of choice for alleviating many problems caused by heavily engineered and industrial forms of transportation. The growth in sedentary and inactive means of transport has lead to a realisation that the perceived benefits of speed, cost and efficiency can overlook the many indirect benefits inherent in active transport and less 'advanced' forms of transport. Cycling has indirect benefits such as human health and well-being, air pollution reduction and overall lower environmental footprints as well as direct 'up-front' benefits over short journeys such as cost, speed and flexibility.
 
 Without some reference points and models to approach improving the existing transport system it is hard to measure how well a particular area performs and what is required to improve it.
 
