@@ -184,13 +184,14 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   #  x <- scotlandMsp for testing
 
   if(amsterdamIndex==TRUE){
-    # require reference data file from bikr package to allow comaprison against Amsterdam values
+    # acquire reference data for Amsterdem region from bikr package to allow relative comparison against Amsterdam values
     scotlandAmsterdam <- scotlandAmsterdam
-    # set max value to standardise against as Amsterdam 
+    # set maxValue to standardise against as Amsterdam 
      maxValue <- function(y) return (y[x$name == 'Stadsregio Amsterdam'])
   }
   if(amsterdamIndex==FALSE){
-    # set max value to standardise against as max value in list/vector
+    # set maxValue to standardise against a max value in list/vector i.e. do not
+    # standardised against Amsterdam - but max value across each sub-category
   maxValue <- function(x) return(max(x))
   
   }

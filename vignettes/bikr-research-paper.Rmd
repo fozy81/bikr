@@ -15,15 +15,15 @@ Many cities, regions and countries across the world are looking to improve their
 
 ## Introduction
 
-Bicycles are the 'intermediate technology' of choice for alleviating many problems of the technological advanced societies. The advances in sedentry and inactive means of  transport has lead to a realisation that the potential benefits of speed, cost and efficiency of these methods can overlook the benefits inherent in active transport and less 'advanced' forms of transport such as exercise, pollution, human health and lower environmental impact. 
+Bicycles are the 'intermediate technology' of choice for alleviating many problems caused by heavily engineered and industrial forms of transportation. The advances in sedentry and inactive means of  transport has lead to a realisation that the potential benefits of speed, cost and efficiency of these devices can overlook the benefits inherent in active transport and less 'advanced' forms of transport such as human health and well-being, air pollution reduction, and overall lower environmental footprints. 
 
-Without some reference points and models to approach improving the existing transport system it is hard to gauge where a particular area performs and what is required to improve it.
+Without some reference points and models to approach improving the existing transport system it is hard to measure how well a particular area performs and what is required to improve it.
 
 Bicycle infrastructure comes from three broad areas
 
-*Legislation
-*Design Guidelines
-*Public support
+* Legislation
+* Design Guidelines
+* Public support
 
 The simple answer to improving bicycle infrastructure is to legislate improvements. But that still leaves a question of where to start and exactly what outcomes are expected. There requires a common framework and platform for sharing, analysing, rating and developing policy for transport including active and bicycle based transport.
 
@@ -58,6 +58,22 @@ ground truthing
 ## Model
 
 Outcomes Vs classification
+
+```{r, echo=FALSE,fig.width=9,fig.height=7}
+library(ggplot2)
+library(bikr)
+    d <- bicycleStatus(scotlandMsp)
+    sumdata <- scotlandMsp
+    d$'Name' <- d$name
+    d <-   merge(d,sumdata,by.x="name",by.y="name")
+    d$'% Commuting By Bicycle' <- d$commutingbybicycle.x
+    d <- d[with(d,order(d$'Total normalised')),]
+    d$name <- as.factor(d$name)
+    d$name <- factor(d$name, levels = d$name[order(d$'Total normalised')])
+    Overall_Status <- d$'Status'
+    p2 <-  qplot(x = d$name,  y= d$'% Commuting By Bicycle', geom="bar",fill=Overall_Status, stat="identity",xlab="Area",ylab="Percentage communting by bicycle") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  p2
+```
 
 ## Use cases
 
