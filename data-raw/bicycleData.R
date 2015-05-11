@@ -8,15 +8,15 @@
 #' @param host 'localhost' or port
 
 
-#### Still in development!  ####
-### Needs tidy up ###
+#### Still in development! Currently  used as rough script not function ####
+### Needs tidy up - lots of bad code!###
 
 #### This file describes how to download data for OpenStreetMap into  postgres database
 
 ### To do
 # 0. The Db side can all go in Docker container if anyone wants to reproduce
 # 1. Docker postgis database makfile
-# 2. makefile to download OMS data + areas
+# 2. makefile to download OSM data + areas
 # 3. makefile to create postGIS db
 # 4. Query database
 # 5. Save summary area data into R package
@@ -60,7 +60,7 @@ system("osm2pgsql -j -x -s -U tim -S /home/tim/Documents/default.style -d gis2 /
 system("rm -r /home/tim/R/postGISupdate")
 
 #### database details
-
+library(RPostgreSQL)
 dbname <- "gis2"
 user <- "tim"
 password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
@@ -93,20 +93,21 @@ con <- dbConnect(dbDriver("PostgreSQL"), user=user,
 
 #### May make a function to call data from db into R pacakge?  
 
-bicycleData <- function(user=user,
-                        password=password, dbname=dbname, host=host){
-  
-  library(RODBC)
-  library(RPostgreSQL)
-  
-  con <- dbConnect(dbDriver("PostgreSQL"), user=user,
-                   password=password, dbname=dbname, host=host)
+# bicycleData <- function(user=user,
+#                         password=password, dbname=dbname, host=host){
+#   
+#   library(RODBC)
+#   library(RPostgreSQL)
+#   
+#   con <- dbConnect(dbDriver("PostgreSQL"), user=user,
+#                    password=password, dbname=dbname, host=host)
 
 ##### drop all tables if exists
 dbSendQuery(con, paste("DROP TABLE IF EXISTS shop_scotland_area, bicycle_parking, bicycle, shop_scotland_poly, shops, shops_point"))
 
 # dbSendQuery(con, paste("DROP TABLE IF EXISTS bicycle_parking, bicycle"))
-##### cycle parking
+
+##### create table of cycle parking from OSM - can be points, area or lines:
 dbSendQuery(con,paste("create table bicycle_parking
 as 
 select  p.covered, p.way, p.osm_id, p.osm_timestamp, p.osm_version, p.osm_uid, p.tags->'capacity' capacity
@@ -126,7 +127,7 @@ dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))
 
 #### Areas update ####
 
-  ### Just some queries I've used in testing, hadny for reference:
+  ### Just some queries I've used in testing, handy for reference:
   
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN version NUMERIC"))
 # dbSendQuery(con,paste("update merged SET commuting_by_bicycle = 42 WHERE commuting_by_bicycle IS NULL"))
@@ -151,7 +152,11 @@ dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN bicycle_parking INTEGER"))
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN area NUMERIC"))
 
+######### Polygon file called 'merged' contains the areas of interest i.e. a
+######### postgis table on your database of the areas you are interested to
+######### query
 
+#### Here follows are series of queries for getting summary data for each multipolygon area:
 # highway proposed
 dbSendQuery(con,paste("UPDATE merged SET proposed_h = (
 SELECT   sum(ST_Length(ST_intersection(ST_Transform(r.way,4326)::geography,ST_Transform(merged.way,4326)::geography))/1000)
@@ -302,6 +307,8 @@ dbSendQuery(con,paste("UPDATE merged SET off_road_c = 0 WHERE off_road_c IS NULL
 # NOT r.highway = 'footway' AND NOT r.highway = 'steps' AND
 # NOT r.highway = 'raceway' AND NOT r.highway = 'pedestrian') WHERE merged.code = 'Seville'"))
 
+
+# all road/paved vehicle roads excludiong service roads because they are not consistently mapped:
   dbGetQuery(con,paste("UPDATE merged SET highways = ( SELECT
  sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000
   FROM planet_osm_line r
@@ -314,7 +321,9 @@ NOT r.highway = 'service')"))
   
 dbSendQuery(con,paste("UPDATE merged SET highways = 0 WHERE highways IS NULL"))
 
-## save file
+## save file query outputs into R package as demo data:
+### splits into three files - Parliamentary areas, council area and all areas -
+### not quite sure the best approach - could just be a single file
 system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json"))      
 command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
 system(command)
