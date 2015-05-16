@@ -96,7 +96,7 @@
 #' \item{\code{Cycle path status}}{Status of cycle path based
 #' on quintiles}
 #' \item{\code{cyclepath to road ratio norm weighted}}{A ratio of
-#' cycle path to road with * 4 weighting. The cycle path to raod ratio is deemed
+#' cycle path to road with * 4 weighting. The cycle path to road ratio is deemed
 #' to be *4 more important than the other indexes}
 #' \item{\code{area to bicycle parking ratio}}{The number of cycle parking spaces
 #' per hectare}
@@ -107,6 +107,9 @@
 #' value is capped at 1.0 even if higher values are produced than the value
 #' found in Amsterdam region. The value is capped because the Amsterdam region
 #' is being used as the benchmark.}
+#' \item{\code{area to bicycle parking norm weighted}}{A ratio of
+#' cycle parking to area. The cycle parking to road ratio is deemed
+#' to be 1.5 more important than the other indexes as default}
 #' \item{\code{Bicycle parking status}}{Status of bicycle parking based on 
 #' quintiles of the normalised score. The five categories are High, Good, 
 #' Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad, 
@@ -163,58 +166,45 @@
 #' Do not operate this function while riding a bicyle
 #' @export
 
-# column order (scotlandMsp data):
-# 1. name
-# 2. cyclepath
-# 3. road
-# 4. bicycleparking
-# 5. area
-# 6. routes
-# 7. proposedroutes
-# 8. proposedcyclepath, 
-# 9. constructioncyclepath
-# 10 editors
-# 11.lasteditdate
-# 12. proposedhighways
-# 13. constructionhighways
-
 bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeight=1.5,routeWeight=0.8,cyclePathWeight=4,ruralWeight=2){
 
   #  x <- scotlandAmsterdam for testing
   #  x <- scotlandMsp for testing
 
+   amsterdamCheck <- function(){
   if(amsterdamIndex==TRUE){
     # acquire reference data for Amsterdem region from bikr package to allow relative comparison against Amsterdam values
     scotlandAmsterdam <- scotlandAmsterdam
-    # set maxValue to standardise against as Amsterdam 
-     maxValue <- function(y) return (y[x$name == 'Stadsregio Amsterdam'])
+    # set max value to standardise against as Amsterdam 
+    maxX <- function(y) return (y[x$name == 'Stadsregio Amsterdam'])
+    return(maxX)
   }
   if(amsterdamIndex==FALSE){
-    # set maxValue to standardise against a max value in list/vector i.e. do not
+    # set max value to standardise against a max value in list/vector i.e. do not
     # standardised against Amsterdam - but max value across each sub-category
-  maxValue <- function(x) return(max(x))
-  
-  }
+    maxY <- function(x) return(max(x))
+    return(maxY)
+  }}
+  maxValue <- amsterdamCheck() 
+   
+  # Quintile function - need to categorise normalised outputs into classes
+  quintileFunc <-  function(x){
+   test <- as.character(cut(x,breaks=c(0,0.2,0.4,0.6,0.8,1),include.lowest = TRUE, labels=c("Bad","Poor","Moderate","Good","High")))
+     }
   
   #normalised cyclepath ratioweighting
   x$'cyclepath to road ratio' <-   round(x$'cyclepath' / x$'road' ,digits=3)  
   x$'cyclepath to road ratio norm' <- round(x$'cyclepath to road ratio' / maxValue(x$'cyclepath to road ratio') ,digits=3)
   x$'cyclepath to road ratio norm' <- ifelse(x$'cyclepath to road ratio norm'> 1,1,x$'cyclepath to road ratio norm') 
-  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.8, "Good", "High")
-  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.6, "Moderate",  x$'Cycle path status')
-  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.4, "Poor",   x$'Cycle path status')
-  x$'Cycle path status' <- ifelse(x$'cyclepath to road ratio norm' <= 0.2, "Bad",   x$'Cycle path status')
+  x$'Cycle path status' <- quintileFunc(x$'cyclepath to road ratio norm') 
   x$'cyclepath to road ratio norm weighted' <- x$'cyclepath to road ratio norm' * cyclePathWeight
   
   # normalised cycleparking   
   x$'area to bicycle parking ratio' <- round(x$'bicycleparking' / x$'area',digits=6) 
   x$'area to bicycle parking ratio norm' <- round(x$'area to bicycle parking ratio' / maxValue(x$'area to bicycle parking ratio'),digits=3)
   x$'area to bicycle parking ratio norm' <-  ifelse( x$'area to bicycle parking ratio norm' > 1,1, x$'area to bicycle parking ratio norm')
-  x$'area to bicycle parking ratio norm' <- x$'area to bicycle parking ratio norm' * bicycleParkingWeight
-  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.8, "Good", "High")
-  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.6, "Moderate",  x$'Bicycle parking status')
-  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.4, "Poor",  x$'Bicycle parking status')
-  x$'Bicycle parking status' <- ifelse(x$'area to bicycle parking ratio norm' <= 0.2, "Bad",    x$'Bicycle parking status')
+  x$'Bicycle parking status' <- quintileFunc(x$'area to bicycle parking ratio norm')
+  x$'area to bicycle parking ratio norm weighted' <- x$'area to bicycle parking ratio norm' * bicycleParkingWeight
   
   # rural weighting
   x$'rural weighting' <- round(round(x$'area' / x$'road',digits=4) / 3000, digits=6) * ruralWeight
@@ -223,19 +213,15 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   x$'cycle route to road ratio' <- round(x$routes / x$road, digits=3) 
   x$'cycle route to road ratio norm' <- round( x$'cycle route to road ratio'  / maxValue(x$'cycle route to road ratio'),digits=2)
   x$'cycle route to road ratio norm' <-  ifelse( x$'cycle route to road ratio norm' >1 ,1, x$'cycle route to road ratio norm')  
-  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.8, "Good", "High")
-  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.6, "Moderate",  x$'National cycle network status')
-  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.4, "Poor",  x$'National cycle network status')
-  x$'National cycle network status' <- ifelse(x$'cycle route to road ratio norm' <= 0.2, "Bad",    x$'National cycle network status')
-  
+  x$'National cycle network status' <- quintileFunc(x$'cycle route to road ratio norm')
   x$'cycle route to road ratio norm weighted' <- x$'cycle route to road ratio norm'  * routeWeight # weighting
   
   # weighting combined for Overall status 
-  x$'Indicator total' <-   round(x$'cyclepath to road ratio norm weighted' +  x$'cycle route to road ratio norm weighted' +  x$'area to bicycle parking ratio norm' + x$'rural weighting', digits=2)
+  x$'Indicator total' <-   round(x$'cyclepath to road ratio norm weighted' +  x$'cycle route to road ratio norm weighted' +  x$'area to bicycle parking ratio norm weighted' + x$'rural weighting', digits=2)
   x$'Total normalised' <- round(x$'Indicator total' /   maxValue(x$'Indicator total'),digits=2)
   
   # Quintiles for status  
-  x$'Status' <- ifelse(x$'Total normalised' <= 0.8, "Good", "High")
+  x$'Status' <- quintileFunc(x$'Total normalised')
   x$'Status' <- ifelse(x$'Total normalised' <= 0.6, "Moderate", x$'Status')
   x$'Status' <- ifelse(x$'Total normalised' <= 0.4, "Poor",  x$'Status')
   x$'Status' <- ifelse(x$'Total normalised' <= 0.2, "Bad",   x$'Status')
@@ -280,6 +266,13 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   x <-  x[with(x, order(x$'Total normalised',decreasing = T )), ]
   x$'Rank' <- 1:length(x[,1])
 
-  return(x[,c('name','commutingbybicycle','version','areacode','cyclepath to road ratio','cyclepath to road ratio norm','Cycle path status','cyclepath to road ratio norm weighted','area to bicycle parking ratio','area to bicycle parking ratio norm','Bicycle parking status','rural weighting','cycle route to road ratio','cycle route to road ratio norm','National cycle network status','cycle route to road ratio norm weighted','Indicator total','Total normalised','Status','Sampling Effort version norm','Sampling Effort','Description','Rank')])
+  return(x[,c('name','commutingbybicycle','version','areacode',
+              'cyclepath to road ratio','cyclepath to road ratio norm',
+              'Cycle path status','cyclepath to road ratio norm weighted',
+              'area to bicycle parking ratio','area to bicycle parking ratio norm',
+              'Bicycle parking status','area to bicycle parking ratio norm weighted','rural weighting',
+              'cycle route to road ratio','cycle route to road ratio norm','National cycle network status',
+              'cycle route to road ratio norm weighted','Indicator total','Total normalised',
+              'Status','Sampling Effort version norm','Sampling Effort','Description','Rank')])
 }
   

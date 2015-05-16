@@ -59,7 +59,7 @@ Amsterdam region (default)}
 \item{\code{Cycle path status}}{Status of cycle path based
 on quintiles}
 \item{\code{cyclepath to road ratio norm weighted}}{A ratio of
-cycle path to road with * 4 weighting. The cycle path to raod ratio is deemed
+cycle path to road with * 4 weighting. The cycle path to road ratio is deemed
 to be *4 more important than the other indexes}
 \item{\code{area to bicycle parking ratio}}{The number of cycle parking spaces
 per hectare}
@@ -70,6 +70,9 @@ is equal to the max. If using amsterdamIndex=TRUE parameter (default), the
 value is capped at 1.0 even if higher values are produced than the value
 found in Amsterdam region. The value is capped because the Amsterdam region
 is being used as the benchmark.}
+\item{\code{area to bicycle parking norm weighted}}{A ratio of
+cycle parking to area. The cycle parking to road ratio is deemed
+to be 1.5 more important than the other indexes as default}
 \item{\code{Bicycle parking status}}{Status of bicycle parking based on
 quintiles of the normalised score. The five categories are High, Good,
 Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
