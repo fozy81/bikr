@@ -18,7 +18,7 @@ Check out the [demo website here](https://opendata.shinyapps.io/shinyapp/). This
 
 Download this package into the R environment. You will need to install R and then the package called 'devtools' from CRAN. You can then install the bikr package from github using ``install_github('fozy81/bikr')``. Installing this bikr package will allow you to:
 
-* Read the help documentation and test out how functions work
+* Read the help documentation and test out how functions/classification workout the status of a given area
 * Access the demo data that is provided in the package
 * Contribute updates back to the project via github 'pull requests' 
 

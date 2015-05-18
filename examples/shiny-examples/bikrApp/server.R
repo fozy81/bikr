@@ -240,7 +240,7 @@ shinyServer(function(input, output, session) {
 
     output$description2  <- renderText({
     
-    description2 <- paste("Based on the values set above, the total cost of improving cycle infrastructure in Scotland to Good status is £ ", datasetTargetTotal()," Million per year",sep="") 
+    description2 <- paste("Based on the values set above, the total cost of improving cycle infrastructure in Scotland to Good status is £ ", datasetTargetTotal()," Million per year. This includes a 'rural bias' which is a reductio in cost for rural areas which require less cyclepaths due to generally quieter roads and lower population density.",sep="") 
     description2 
   })
   
