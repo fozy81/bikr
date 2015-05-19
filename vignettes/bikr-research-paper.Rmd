@@ -3,6 +3,7 @@ title: "The bikr package - towards a collaborative platform for bicycle infrastr
 author: "Tim Foster"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+bibliography: bibliography.bib
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
@@ -21,25 +22,56 @@ Bicycles are the ['appropriate technology'](http://en.wikipedia.org/wiki/Appropr
 
 Without some reference points and models to approach improving the existing transport system it is hard to measure how well a particular area performs and what is required to improve it.
 
-Bicycle infrastructure comes from three broad areas:
+## Current methods
 
-* Legislation
-* Design Guidelines
-* Public support
+There are a number of existing systems for rating or assessing cycle infrastructure [@Rybarczyk2010,@Ngoduy2013, and @Larsen2013]. These take a number of different approaches to rating, risk assessing and suggesting areas of improvement to on the ground cycle infrastructure. The breadth of techniques used and the patchiness of where they have been implement highlights the complexity of creating an objective method for assessing cycle infrastructure. The complexity emerges from the number of social, economic and physical factors that encourage or preclude transport by bicycle. There are also a number of reason to evaluate cycle infrastructure these can range from improving public safety, increasing cycling, providing tourism, rating how 'green'a city is, cycling as a sport or improving cycle networks. And there are a number of scales from national, regional to local.  
 
-The simple answer to improving bicycle infrastructure is to legislate improvements. But that still leaves a question of where to start and exactly what outcomes are expected. There requires a common framework and platform for sharing, analysing, rating and developing policy for transport including active and bicycle based transport.
+## Legislation, design guidelines
+
+The outputs from using these methods maybe to supplement three broad areas:
+
+* Legislation - Implementing and assessing
+* Design Guidelines - Applying design guidelines to a particular area
+* Local plans or public campaigns - Local specific area 'hotspots' to improve and engaging the local community in consultations or campaigns
+
+Until recently few little legislation specifically planned or compelled government to build, maintain or replace cyclepaths. Most planning was piecemeal at a local level, often associated with local interest groups.
+The simple answer to improving bicycle infrastructure is to legislate improvements. But that still leaves a question of where to start and exactly what outcomes are expected. There requires a common framework and platform for sharing, analysing, rating and developing policy for transport including active and bicycle based transport. 
+
+## Policy
+
+Governments form laws on three principles, ideology, evidence and public opinion. A platform can provide evidence but this is only the empirical manifestation of legislation, design guidelines and local planning. The popularity and overall success of a project is based on complex mix of social norms, public opinion and economics. Any classification platform may tell you in detail about the cycle infrastructure present and the apparent success of that infrastructure in terms of usage. However, replicating exactly the same level of cycle infrastructure in another area may not have exactly the outcome. The idea of the platform is to slowly iterate by testing hypothesis of what good cycle infrastructure is considered to be against the outcomes in different areas. Currently the the proposed platofrm does not account for social, economic, psychology, local variations that may impact on the outcomes which are hoped for from cycle infrastructure. It's conceivable that social survey information along with social and economic datasets could also be incorporated in the system. 
 
 ## The platform
 
-There are a number of existing systems for rating cycle infrastructure...
+Comprehensive data on bicycle usage, attitudes to cycling and cycle infrastruture is not broadly available. Many datasets are scattered or fragmented across agencies and organsiations at differentlevels of government. Although more data is being made available through Open Data initiatives. There is no common API or linked data repository to easily query and analyse bicycle related information either as social, economic or geospatial data.
 
-What data is available....census, national agencies, 
+Design principles for the platform
 
-OpenStreetMap...international and lots of data...
+* Open-source and free - this allows anyone from 3rd sector, private or governmental bodies to re-create and re-use at minimal cost
+* Modular and customisable - define a common framework for analyses and data to slot into and make all aspects customisable
+* Provide a number of levels for users to collaborate or use the data - provide a number of option to make it easy to use at any level
 
-Supplement with other data...
+## Data
 
-R package, postGIS, open-source
+The starting place for this platform is to build on the most comprehensive, international and widely accesible data source available. This is data available for the OpenStreetMap organisation that provides free and open data based on the contributions of volunteers. OpenStreetMap has rapidly grow and now provides very complete datasets for bicycle data across a wide spectrum of countries(pascal paper). 
+
+The openstreetmap dataset is capable of providing a good source of data on a number of aspects of cycle infrastruture particuarly fixed assets. This data can provide core infromation on bicycle parking spaces, cyclepath length, national cycle paths, cycle path fragmentation, cycle journey times or cycle shops and velodromes. This provides a strong basis and offers a common API for adding data and building more features. 
+
+Ideally, OpenStreetMap data can be supplemented with data from other APIs or Linked Data repositories. Or held in version control data repos for reference. For example, census information or boundary data...
+
+## Database
+
+OpenStreetMap data is avialable in the form of xml text file as is census and boundary data. This data is best brought together and analysed with a database environment. As the commonly used database for OSM - postgres. This is desirable to use as it is free and open source and has GIS spatial queries via postGIS. However, initially any database with spatial querying could be used. Or the spatial queries could be shifted entirely to the next layer:
+
+ postGIS, open-source
+
+## Analysis
+
+R has been used as part of the this platform to provide a statistical engine to process the data. It also has a popular and well designed 'package' facility which makes it ideal to create well documented, tested and portable statistics package to share and collaborate with. Any R package can also be hosted on OPEN CPU to provide a web API to send and receive input and outputs over the web. This creates both an API of the calculations and the data. Providing a template and standards for data and calculations. 
+
+## Re-use and Visualisation
+
+
 
 ## Metrics and classification
 
