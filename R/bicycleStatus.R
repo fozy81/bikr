@@ -111,7 +111,7 @@
 #' cycle parking to area. The cycle parking to road ratio is deemed
 #' to be 1.5 more important than the other indexes as default}
 #' \item{\code{Bicycle parking status}}{Status of bicycle parking based on 
-#' quintiles of the normalised score. The five categories are High, Good, 
+#' quintiles of the normalised ratio of cycle parking per hectare. The five categories are High, Good, 
 #' Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad, 
 #' 0.4 = Poor, 0.6 = Moderate, 0.8 = Good, 1.0 = High. For instance, if a 
 #' location has 60\% the parking of Amsterdam it will
@@ -133,13 +133,13 @@
 #' than Amsterdam is seen as superfluous if Amsterdam is accepted as the Gold
 #' standard in bicycle infrastructure provision.}
 #' \item{\code{National cycle network status}}{Status of National Cycle Network based on
-#' quintiles of the normalised score. The five categories are High, Good,
+#' quintiles of the normalised ratio of NCN routes to total road length. The five categories are High, Good,
 #' Moderate, Poor or Bad. The boundaries are less than or equal to 0.2 = Bad,
 #' 0.4 = Poor, 0.6 = Moderate, 0.8 = Good, 1.0 = High. For instance, if a
-#' location has 85\% the length of Amsterdam it will
+#' location has 80\% the length of Amsterdam it will
 #' categorised as 'High'.}
 #' \item{\code{cycle route to road ratio norm weighted}}{A ratio of
-#' cycle route to road ratio with * 2 weighting. The cycle path to road ratio is deemed
+#' cycle route to road ratio * weighting. The cycle path to road ratio is deemed
 #' to be *2 more important than the other indexes}
 #' \item{\code{Indicator total}}{The Indicator total is the sum of the normalised ratios}
 #' \item{\code{Total normalised}}{The Total normalised is the sum of the
