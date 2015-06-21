@@ -4,7 +4,7 @@ library(rCharts)
 
 shinyUI(
   navbarPage( 
-  title = 'Bicycle Framework Directive - Tracking the quality of bicycle infrastructure in your area',
+  title = 'V3LO-SCAPE - Tracking the quality of bicycle infrastructure in your area',
   tabPanel('Classification',
            fluidRow(column(12,uiOutput('pleaseClick'),
                           leafletOutput("map")),
