@@ -63,12 +63,13 @@ system("rm -r /home/tim/R/postGISupdate")
 library(RPostgreSQL)
 dbname <- "gis2"
 user <- "tim"
+password <- "postgres"
 password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
 host <- "localhost"
-con <- dbConnect(dbDriver("PostgreSQL"), user=user,
-             password=password, dbname=dbname, host=host)
+con <- dbConnect(dbDriver("PostgreSQL"), user="username",
+             password=password, dbname=dbname, host=host,port=5432)
 
-
+con <- dbConnect(dbDriver("PostgreSQL"), dbname="gis2")
 #### order columns required for bicycleStatus function:
 # library(jsonlite)
 # d <- data.frame(fromJSON('/home/tim/github/cycle-map-stats/Rscript/summary.json',flatten=T))
@@ -107,6 +108,7 @@ dbSendQuery(con, paste("DROP TABLE IF EXISTS shop_scotland_area, bicycle_parking
 
 # dbSendQuery(con, paste("DROP TABLE IF EXISTS bicycle_parking, bicycle"))
 
+# dbSendQuery(con, paste("DROP TABLE IF EXISTS bicycle_parking"))
 ##### create table of cycle parking from OSM - can be points, area or lines:
 dbSendQuery(con,paste("create table bicycle_parking
 as 
@@ -285,7 +287,7 @@ dbSendQuery(con,paste("UPDATE merged SET bicycle_pa = 0 WHERE bicycle_pa IS NULL
 
 # off_road_cycle_paths
  dbSendQuery(con,paste("UPDATE merged SET off_road_c = (SELECT  
-  sum(ST_Length(ST_intersection(ST_Transform(r.way,4326)::geography,ST_Transform(merged.way,4326)::geography))/1000)
+  sum(ST_Length(ST_Intersection(ST_Transform(r.way,4326)::geography,ST_Transform(merged.way,4326)::geography))/1000)
   FROM planet_osm_line r
   WHERE ST_Intersects(merged.way, r.way) AND 
 (r.highway = 'cycleway' AND r.surface NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips')
@@ -349,4 +351,39 @@ scotlandAmsterdam <- d2
 save(scotlandMsp,file="data/scotlandMsp.RData",compress='xz') 
 save(scotlandCouncil,file="data/scotlandCouncil.RData",compress='xz') 
 save(scotlandAmsterdam,file="data/scotlandAmsterdam.RData",compress='xz') 
+
+
+library(bikr)
+library(RJSONIO)
+
+d1 <- bicycleStatus(scotlandMsp)
+d1$fillcolor <- ifelse(d1$Status == "High","#ffffb2","")
+d1$fillcolor <- ifelse(d1$Status == "Good","#fecc5c",d1$fillcolor)
+d1$fillcolor <- ifelse(d1$Status == "Moderate","#fd8d3c",d1$fillcolor)
+d1$fillcolor <- ifelse(d1$Status == "Poor","#f03b20",d1$fillcolor)
+d1$fillcolor <- ifelse(d1$Status == "Bad","#bd0026",d1$fillcolor)
+
+e1 <- bicycleStatus(scotlandCouncil)
+e1$fillcolor <- ifelse(e1$Status == "High","#ffffb2","")
+e1$fillcolor <- ifelse(e1$Status == "Good","#fecc5c",e1$fillcolor)
+e1$fillcolor <- ifelse(e1$Status == "Moderate","#fd8d3c",e1$fillcolor)
+e1$fillcolor <- ifelse(e1$Status == "Poor","#f03b20",e1$fillcolor)
+e1$fillcolor <- ifelse(e1$Status == "Bad","#bd0026",e1$fillcolor)
+
+f <- '~/Documents/github/R/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json'
+con = file(f,"r")
+geojson <- RJSONIO::fromJSON('~/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json')
+geojson <- RJSONIO::fromJSON('~/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandCouncil.json')
+
+d2 <- RJSONIO::fromJSON('scotlandCouncil.json')
+    
+
+d <- e1
+for (i in 1:length(d[,1])){
+  
+  geojson$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
+                                                    fill = "true", opacity = 0.9,
+                                                    fillOpacity = 0.9, color= paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]),
+                                                    fillColor = paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]))
+
 }

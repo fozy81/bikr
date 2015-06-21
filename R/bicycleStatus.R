@@ -35,8 +35,8 @@
 #' more closely align the overall status classification to
 #' socio-ecomonic-enviromental outcomes.
 #' 
-#' Each entry in the dataframe is also given a 'Sampling effort'. In this
-#' context, it measures the sampling effort (number of OpenStreetMap
+#' Each entry in the dataframe is also given a 'Map Data Quality'. In this
+#' context, it measures the Map Data Quality (number of OpenStreetMap
 #' editors) and the time of last edit to represent uncertainty in the
 #' quality of the OpenStreetMap data. However, the current method is a fudge but
 #' produces figures that appear roughly feasible. Further empirical testing is
@@ -67,7 +67,7 @@
 #' routeWeight=0.8,cyclePathWeight=4,ruralWeight=2)
 #'   
 #' @param x Dataframe input from bicycleData function 
-#' @param effort Estimate sampling effort to assess confidence in data quality
+#' @param effort Estimate Map Data Quality to assess confidence in data quality
 #'   (default=TRUE)
 #' @param amsterdamIndex Calculate status relative to data for Amsterdam included in
 #'   package (default=TRUE)
@@ -152,8 +152,8 @@
 #' location has 15\%  the Total normalised value of Amsterdam it will be
 #' categorised as
 #' 'Bad'.}
-#' \item{\code{Sampling Effort}}{The Sampling Effort is a percentage estimate of the
-#' sampling effort and therefore the quality of the underlying map data. It is
+#' \item{\code{Map data quality}}{Map data quality is a percentage estimate of the
+#' sampling effort made by the map editors in OpenStreetMap and therefore the quality of the underlying map data. It is
 #' based on three features of the bicycle parking data openstreetmap extracted:
 #' The average number of versions of each node, the total number of editors and
 #' the timestamp of the most recent edit.}
@@ -226,33 +226,33 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
   x$'Status' <- ifelse(x$'Total normalised' <= 0.4, "Poor",  x$'Status')
   x$'Status' <- ifelse(x$'Total normalised' <= 0.2, "Bad",   x$'Status')
   if(effort==TRUE){
-  # Sampling Effort 
-    x$'Sampling Effort editors' <- round(x$editors / x$area, digits=7) 
-     x$'Sampling Effort editors norm'  <-  round(x$'Sampling Effort editors' / x$'rural weighting',digits=7)
-      x$'Sampling Effort editors norm' <- round( x$'Sampling Effort editors norm' / maxValue(x$'Sampling Effort editors norm'),digits=7)
-    x$'Sampling Effort editors norm'  <-  ifelse( x$'Sampling Effort editors norm'  > 1,1, x$'Sampling Effort editors norm' )
+  # Map Data Quality 
+    x$'Map Data Quality editors' <- round(x$editors / x$area, digits=7) 
+     x$'Map Data Quality editors norm'  <-  round(x$'Map Data Quality editors' / x$'rural weighting',digits=7)
+      x$'Map Data Quality editors norm' <- round( x$'Map Data Quality editors norm' / maxValue(x$'Map Data Quality editors norm'),digits=7)
+    x$'Map Data Quality editors norm'  <-  ifelse( x$'Map Data Quality editors norm'  > 1,1, x$'Map Data Quality editors norm' )
     
-    x$'Sampling Effort version' <- round(x$version / x$area, digits=7) 
-    x$'Sampling Effort version norm'  <-  round(x$'Sampling Effort version' / x$'rural weighting',digits=7)
-    x$'Sampling Effort version norm' <- round( x$'Sampling Effort version norm' / maxValue(x$'Sampling Effort version norm'),digits=7)
-    x$'Sampling Effort version norm'  <-  ifelse( x$'Sampling Effort version norm'  > 1,1, x$'Sampling Effort version norm')
+    x$'Map Data Quality version' <- round(x$version / x$area, digits=7) 
+    x$'Map Data Quality version norm'  <-  round(x$'Map Data Quality version' / x$'rural weighting',digits=7)
+    x$'Map Data Quality version norm' <- round( x$'Map Data Quality version norm' / maxValue(x$'Map Data Quality version norm'),digits=7)
+    x$'Map Data Quality version norm'  <-  ifelse( x$'Map Data Quality version norm'  > 1,1, x$'Map Data Quality version norm')
     
-    x$'Sampling Effort' <- as.numeric(as.Date(x$lasteditdate)) - as.numeric(as.Date(maxValue(x$lasteditdate)))
-    x$'Sampling Effort'  <-   x$'Sampling Effort' -  (min(x$'Sampling Effort') - 1)
-  x$'Sampling Effort' <- round(x$'Sampling Effort' / x$'rural weighting',digits=7)
-  x$'Sampling Effort' <- round(x$'Sampling Effort' / maxValue(x$'Sampling Effort') ,digits=6)
-  x$'Sampling Effort'  <-  ifelse( x$'Sampling Effort'  > 1,1, x$'Sampling Effort')
+    x$'Map Data Quality' <- as.numeric(as.Date(x$lasteditdate)) - as.numeric(as.Date(maxValue(x$lasteditdate)))
+    x$'Map Data Quality'  <-   x$'Map Data Quality' -  (min(x$'Map Data Quality') - 1)
+  x$'Map Data Quality' <- round(x$'Map Data Quality' / x$'rural weighting',digits=7)
+  x$'Map Data Quality' <- round(x$'Map Data Quality' / maxValue(x$'Map Data Quality') ,digits=6)
+  x$'Map Data Quality'  <-  ifelse( x$'Map Data Quality'  > 1,1, x$'Map Data Quality')
  
-  x$'Sampling Effort'<- x$'Sampling Effort'  +    x$'Sampling Effort version norm' +     x$'Sampling Effort version norm' 
-  x$'Sampling Effort' <- 100 / maxValue(x$'Sampling Effort') * x$'Sampling Effort'
-  x$'Sampling Effort' <- unlist(lapply(x$'Sampling Effort',function(y){
+  x$'Map Data Quality'<- x$'Map Data Quality'  +    x$'Map Data Quality version norm' +     x$'Map Data Quality version norm' 
+  x$'Map Data Quality' <- 100 / maxValue(x$'Map Data Quality') * x$'Map Data Quality'
+  x$'Map Data Quality' <- unlist(lapply(x$'Map Data Quality',function(y){
     if (y < 30){
             return(y + 30)  # fudge factor for very low scores - could improve...
     }
     else return(y)
   }))
   
-  x$'Sampling Effort' <-   paste(round(x$'Sampling Effort',digits=2),"%",sep="")
+  x$'Map Data Quality' <-   paste(round(x$'Map Data Quality',digits=2),"%",sep="")
   }
   
   x$'Description' <- paste("The cycle infrastructure in ", x$name," consists of ",x$cyclepath,
@@ -273,6 +273,6 @@ bicycleStatus <- function(x,amsterdamIndex=TRUE,effort=TRUE, bicycleParkingWeigh
               'Bicycle parking status','area to bicycle parking ratio norm weighted','rural weighting',
               'cycle route to road ratio','cycle route to road ratio norm','National cycle network status',
               'cycle route to road ratio norm weighted','Indicator total','Total normalised',
-              'Status','Sampling Effort version norm','Sampling Effort','Description','Rank')])
+              'Status','Map Data Quality version norm','Map Data Quality','Description','Rank')])
 }
   

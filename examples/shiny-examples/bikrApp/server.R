@@ -188,10 +188,14 @@ shinyServer(function(input, output, session) {
   
   output$comparisonStatusTable <- renderDataTable({
         d <- dstatus()
-    data <- data.frame(cbind(names(d[,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')]), t(d[d[,1] == values$selectedFeature$name,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')])))
-    data2 <- data.frame(t(d[d[,1] == input$areaName,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')]))
-    data <- cbind(data,data2)
-    names(data) <- c("Quality Element",values$selectedFeature$name,input$areaName)
+  #  data <- data.frame(cbind(names(d[,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Map Data Quality')]), t(d[d[,1] == values$selectedFeature$name,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Map Data Quality')])))
+   data1 <- data.frame(cbind(names(d[,c('cyclepath to road ratio','area to bicycle parking ratio','cycle route to road ratio','Total normalised','Map Data Quality version norm')]), t(d[d[,1] == values$selectedFeature$name,c('cyclepath to road ratio','area to bicycle parking ratio','cycle route to road ratio','Total normalised','Map Data Quality version norm')])))
+   # data2 <- data.frame(t(d[d[,1] == input$areaName,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Map Data Quality')]))
+    data3 <- data.frame(t(d[d[,1] == input$areaName,c('cyclepath to road ratio','area to bicycle parking ratio','cycle route to road ratio','Total normalised','Map Data Quality version norm')]))
+    
+  #  data - cbind(data,data1,data2,data3)
+    data <- cbind(data1,data3)
+    names(data) <- c("Quality Element",values$selectedFeature$name,values$selectedFeature$name,input$areaName,input$areaName)
     #data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
     data
   },options = list(searching =FALSE,paging = FALSE))

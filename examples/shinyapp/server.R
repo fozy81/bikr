@@ -5,6 +5,7 @@ library(RJSONIO)
 #devtools::install_github("fozy81/mypackage")
 library(bikr)
 library(ggplot2)
+library(googleVis)
 # 
  d1 <- bicycleStatus(scotlandMsp)
 d1$fillcolor <- ifelse(d1$Status == "High","#ffffb2","")
@@ -121,7 +122,7 @@ shinyServer(function(input, output, session) {
     d <- dstatus()
     sumdata <- sumdata() 
     data <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
-    data <- sum(as.numeric(as.character(data$'Projected Cost per year £M')))
+    data <- sum(as.numeric(as.character(data$'Projected Cost per year Million GBP')))
     data
   })
   
@@ -129,7 +130,9 @@ shinyServer(function(input, output, session) {
     d <- dstatus()
     sumdata <- sumdata() 
     datas <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
-    datas
+    datas <-  datas[c('Name','Cycle Path km increase target (no rural bias)','Yearly km increase target','Projected Cost per year Million GBP')]
+   names(datas) <- c('Name','Total Cycle Path km increase target','Yearly km increase target','Projected Cost per year £ Million') 
+     datas
   })
   
 
@@ -188,8 +191,8 @@ shinyServer(function(input, output, session) {
   
   output$comparisonStatusTable <- renderDataTable({
         d <- dstatus()
-    data <- data.frame(cbind(names(d[,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')]), t(d[d[,1] == values$selectedFeature$name,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')])))
-    data2 <- data.frame(t(d[d[,1] == input$areaName,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Total normalised','Sampling Effort')]))
+    data <- data.frame(cbind(names(d[,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Map Data Quality')]), t(d[d[,1] == values$selectedFeature$name,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Map Data Quality')])))
+    data2 <- data.frame(t(d[d[,1] == input$areaName,c('Cycle path status','Bicycle parking status','National cycle network status','Status','Map Data Quality')]))
     data <- cbind(data,data2)
     names(data) <- c("Quality Element",values$selectedFeature$name,input$areaName)
     #data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
@@ -221,23 +224,75 @@ shinyServer(function(input, output, session) {
   #                return(p2)
   #   })
   
-  output$chart2 <- renderPlot({
-    d <- dstatus()
-    d <- d[d[,1] == values$selectedFeature$name | d[,1] == input$areaName, ]
-    
+#   output$chart2 <- renderPlot({
+#     d <- dstatus()
+#     d <- d[d[,1] == values$selectedFeature$name | d[,1] == input$areaName, ]
+#     
+#     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
+#            p <-  qplot(x = d$name,  y = d$'Total normalised', geom="bar",stat="identity",fill=d$name,xlab="Area",ylab="Bicycle Quality Ratio (Total normalised)")) 
+#     p <- p + scale_fill_manual(values= sort(d$fillcolor,decreasing=F), name="City", labels=sort(d$name,decreasing=F))
+#     return(p)
+#     
+#   })
+#   
+  output$chart2 <- renderGvis({
+    d <- sumdata()
+    d <- d[d$name == values$selectedFeature$name,] #  d <- d[d[,2] == 'Glasgow Southside',]
+    d <- d[c('cyclepath','road')]
+    d <- as.data.frame(t(d))
+    d <- cbind(t(data.frame('cyclepath',"road")), d)
+   # names(d) <- c('cyclepath','highway roads')
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
-           p <-  qplot(x = d$name,  y = d$'Total normalised', geom="bar",stat="identity",fill=d$name,xlab="Area",ylab="Bicycle Quality Ratio (Total normalised)")) 
-    p <- p + scale_fill_manual(values= sort(d$fillcolor,decreasing=F), name="City", labels=sort(d$name,decreasing=F))
-    return(p)
+     
+       doughnut <- gvisPieChart(d, 
+                             options=list(
+                               width=500,
+                               height=500,
+                               title='Cycle path km Vs Road km',
+                               legend='none',
+                               colors="['orange','gray']",
+                               pieSliceText='label',
+                               pieHole=0.5),
+                             chartid="doughnut"))
+    return(doughnut)
+    
+  })
+  
+  output$chart3 <- renderGvis({
+    d <- sumdata()
+    d <- d[d$name == input$areaName,] #  d <- d[d[,2] == 'Glasgow Southside',]
+    d <- d[c('cyclepath','road')]
+    d <- as.data.frame(t(d))
+    d <- cbind(t(data.frame('cyclepath km',"road km")), d)
+    # names(d) <- c('cyclepath','highway roads')
+    ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
+           
+           doughnut <- gvisPieChart(d, 
+                                    options=list(
+                                      width=400,
+                                      height=400,
+                                      title='Cycle path km Vs Road km',
+                                      legend='none',
+                                      colors="['orange','gray']",
+                                      pieSliceText='label',
+                                      pieHole=0.5),
+                                    chartid="doughnut"))
+    return(doughnut)
     
   })
   
   output$comparisonStatusChart <- renderUI({
     if (!is.null(values$selectedFeature)){
-    list("Comparison Chart", plotOutput("chart2"))
+    list(paste("Doughnut chart for ",values$selectedFeature$name,sep=""), htmlOutput("chart2"))
     }
   })
-
+#   
+#   output$comparisonStatusChart2 <- renderUI({
+#     if (!is.null(values$selectedFeature)){
+#       list(paste("Doughnut chart for Amsterdam"), htmlOutput("chart3"))
+#     }
+#   }) 
+ 
     output$description2  <- renderText({
     
     description2 <- paste("The total cost of improving cycle infrastructure to Good status is £ ", datasetTargetTotal()," Million per year",sep="") 
@@ -283,6 +338,8 @@ shinyServer(function(input, output, session) {
     d
   },options = list(searching = TRUE,paging = FALSE))
 
+  
+  
   
   })
   
