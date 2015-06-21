@@ -4,7 +4,7 @@ library(rCharts)
 
 shinyUI(
   navbarPage( 
-  title = 'Bicycle Framework Directive - powered by OpenStreetMap data',
+  title = 'V3LO-SCAPE - Bicycle Framework Directive - powered by OpenStreetMap data',
   tabPanel('Classification',
            fluidRow(column(12,uiOutput('pleaseClick'),
                           leafletOutput("map")),
