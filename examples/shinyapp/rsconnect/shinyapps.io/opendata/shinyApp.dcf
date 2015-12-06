@@ -1,0 +1,6 @@
+name: shinyApp
+account: opendata
+server: shinyapps.io
+bundleId: 209085
+url: https://opendata.shinyapps.io/shinyapp
+when: 1434921578.99865

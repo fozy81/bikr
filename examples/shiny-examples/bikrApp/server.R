@@ -72,7 +72,7 @@ shinyServer(function(input, output, session) {
    })
   
   
-  output$map <- renderLeaflet({
+  output$mymap <- renderLeaflet({
     
       geojson <- geojsondata()
     d <- dstatus()
@@ -88,6 +88,11 @@ shinyServer(function(input, output, session) {
     addGeoJSON(geojson) %>%
     setView(3.911, 56.170, zoom = 5 )
 
+    # stop spinner    
+    session$sendCustomMessage(type = "map_done", "done")
+    
+    m
+    
     })
   
 
