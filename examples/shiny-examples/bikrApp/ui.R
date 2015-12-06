@@ -6,17 +6,19 @@ shinyUI(
   navbarPage( 
   title = 'V3LO-SCAPE - Tracking the quality of bicycle infrastructure in your area',
   tabPanel('Classification',
-           includeScript("spin.min.js"),
+          # includeScript("spin.min.js"),
            fluidRow(column(12,uiOutput('pleaseClick'),
-                          leafletOutput("mymap"),    tags$script("var spinner = new Spinner().spin();
-                                                              $( 'div#mymap' ).append(spinner.el);"),
-                          tags$script('
-  Shiny.addCustomMessageHandler("map_done",
-        function(s) {
-          spinner.stop();
-          $( "div#mymap" ).remove(spinner);
-        });')
-                          
+                          leafletOutput("mymap")
+                          #,  
+# tags$script("var spinner = new Spinner().spin();
+#                                                               $( 'div#mymap' ).append(spinner.el);"),
+#                           tags$script('
+#   Shiny.addCustomMessageHandler("map_done",
+#         function(s) {
+#           spinner.stop();
+#           $( "div#mymap" ).remove(spinner);
+#         });')
+#                           
                           ),
 
 tags$div(
