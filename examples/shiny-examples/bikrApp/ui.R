@@ -16,13 +16,13 @@ htmlOutput("details"),
                                                  ".shiny-output-error { visibility: hidden; }",
                                                  ".shiny-output-error:before { visibility: hidden; }"
                     ),hr(),
-                    h4("This site uses bicycle infrastructure data from",tags$a(href="http://www.openstreetmap.org/#map=10/55.9496/-3.8809&layers=C","OpenStreetMap"), "to classify the level of provision in a given area. The classification is created by standardising against data from Amsterdam region as a reference condition of 'High' status."),
+                    wellPanel( h4("This site uses bicycle infrastructure data from",tags$a(href="http://www.openstreetmap.org/#map=10/55.9496/-3.8809&layers=C","OpenStreetMap"), "to classify the level of provision in a given area. The classification is created by standardising against data from Amsterdam region as a reference condition of 'High' status."),
                     h4("Find out more, get the data and contribute to the project", tags$a(href="https://github.com/fozy81/bikr","here")),
                     htmlOutput('description'),
                     selectInput("adminLevel","Switch admin level in Scotland",choices = c("Scottish Parliamentary Constituencies" = "scotlandMsp","Scottish Councils Areas" = "scotlandCouncil"),selected = 'scotlandMsp'), 
                     uiOutput('rankStatusTable'),
                      uiOutput('areaSelect'), 
-                    uiOutput('comparisonTable')),
+                    uiOutput('comparisonTable'))),
                     
                     fluidRow(column(7, offset = 1, uiOutput("comparisonStatusChart")
                     )))
