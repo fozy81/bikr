@@ -61,13 +61,13 @@ system("rm -r /home/tim/R/postGISupdate")
 
 #### database details
 library(RPostgreSQL)
-# dbname <- "gis2"
-# user <- "tim"
-# password <- "postgres"
-# password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
-# host <- "localhost"
-# con <- dbConnect(dbDriver("PostgreSQL"), user="username",
-#              password=password, dbname=dbname, host=host,port=5432)
+dbname <- "gis2"
+user <- "tim"
+password <- "postgres"
+password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
+host <- "localhost"
+con <- dbConnect(dbDriver("PostgreSQL"), user="username",
+             password=password, dbname=dbname, host=host,port=5432)
 
 con <- dbConnect(dbDriver("PostgreSQL"), dbname="gis2")
 #### order columns required for bicycleStatus function:
@@ -127,33 +127,10 @@ where planet_osm_polygon.amenity = 'bicycle_parking'"))
 dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))           
  dbSendQuery(con,paste("ALTER TABLE bicycle_parking ADD COLUMN cap NUMERIC"))      
 
-#  
-#  CREATE TABLE osm_hetero(gid serial NOT NULL,
-#                          osm_id integer, geom geometry,
-#                          ar_num integer, tags hstore,
-#                          CONSTRAINT osm_hetero_pk PRIMARY KEY (gid),
-#                          CONSTRAINT enforce_dims_geom CHECK (st_ndims(geom) = 2),
-#                          CONSTRAINT enforce_srid_geom CHECK (st_srid(geom) = 4326));
-#  
- INSERT INTO osm_hetero(osm_id, geom, ar_num, tags)
- SELECT o.osm_id, ST_Intersection(o.geom, a.geom) As geom,
- a.ar_num, o.tags
- FROM
- (SELECT osm_id, ST_Transform(way, 4326) As geom, tags FROM
- planet_osm_line) AS O INNER JOIN merged AS A ON
- (ST_Intersects(o.geom, a.geom));
- 
- CREATE INDEX idx_osm_hetero_geom
- ON osm_hetero USING gist(geom);
- CREATE INDEX idx_osm_hetero_tags
- ON osm_hetero USING gist(tags);
- VACUMM ANALYZE osm_hetero;
- 
 #### Areas update ####
 
   ### Just some queries I've used in testing, handy for reference:
-  # ALTER TABLE merged ADD COLUMN tags hstore
- #ALTER TABLE merged ADD COLUMN osm_id integer
+  
 # dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN version NUMERIC"))
 # dbSendQuery(con,paste("update merged SET commuting_by_bicycle = 42 WHERE commuting_by_bicycle IS NULL"))
 # dbSendQuery(con,paste("update merged SET commuting_by_bicycle = CAST (census.bikers as NUMERIC) FROM census WHERE census.name = merged.name"))
