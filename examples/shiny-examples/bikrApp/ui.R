@@ -4,7 +4,7 @@ library(rCharts)
 
 shinyUI(
   navbarPage( theme = "bootstrap.min.css",
-  title = 'Track the quality of bicycle infrastructure in your area',
+  title = 'Rate bicycle infrastructure in your area against Amsterdam!',
   tabPanel('Current Status', 
            fluidRow(column(6, htmlOutput("description"),   htmlOutput('details')),
              column(6, wellPanel(uiOutput('pleaseClick'),
@@ -15,8 +15,10 @@ tags$div()),
 
 hr(),
                     fluidRow(
-                    column(6, wellPanel(
-                      htmlOutput('scotlandDetails'), uiOutput('areaSelect'), uiOutput('comparisonTable'), uiOutput('comparisonMetric'),   uiOutput("comparisonStatusChart")  
+                    column(6,  htmlOutput('scotlandDetails'),  uiOutput('areaSelect'), tabsetPanel(
+                     tabPanel("Overall Rating", uiOutput('comparisonTable')),
+                     tabPanel ("NCN rating", uiOutput('comparisonMetric')), 
+                     tabPanel("Graph", uiOutput("comparisonStatusChart"))
                     )),
                     column(6, tags$style(type="text/css",
                                          ".shiny-output-error { visibility: hidden; }",
