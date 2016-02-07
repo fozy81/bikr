@@ -1,12 +1,6 @@
 name: shinyapp
 account: opendata
 server: shinyapps.io
-<<<<<<< HEAD
-bundleId: 325632
-url: https://opendata.shinyapps.io/shinyapp
-when: 1449432275.35835
-=======
-bundleId: 329998
-url: https://opendata.shinyapps.io/shinyapp
-when: 1450026465.79274
->>>>>>> new_branch_name
+bundleId: 368007
+url: https://opendata.shinyapps.io/shinyapp/
+when: 1454883196.66873

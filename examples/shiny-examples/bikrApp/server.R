@@ -93,7 +93,7 @@ shinyServer(function(input, output, session) {
     }
     Areas <- geojson 
     m = leaflet()  %>%  
-      addTiles(group = "Dark CartoDB (default)", '//{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 
+      addTiles(group = "Dark CartoDB (default)", 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 
       attribution=HTML('&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,
                        &copy; <a href="http://cartodb.com/attributions">CartoDB</a>
                        &copy; <a href="http://www.thunderforest.com/">Thunderforest</a>
