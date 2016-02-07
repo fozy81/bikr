@@ -3,7 +3,7 @@ library(rCharts)
 
 
 shinyUI(
-<<<<<<< HEAD
+
   navbarPage( 
   title = 'V3LO-SCAPE - Tracking the quality of bicycle infrastructure in your area',
   tabPanel('Classification',
@@ -37,7 +37,7 @@ htmlOutput("details"),
                     
                     fluidRow(column(7, offset = 1, uiOutput("comparisonStatusChart")
                     )))
-=======
+
   navbarPage( theme = "bootstrap.min.css",
   title = 'Rate bicycle infrastructure in your area against Amsterdam!',
   tabPanel('Current Status', 
@@ -60,8 +60,7 @@ hr(),
                        #         h4("Find out more, get the data and contribute to the project", tags$a(href="https://github.com/fozy81/bikr","here")),
                                selectInput("adminLevel","Switch admin level in Scotland",choices = c("Scottish Parliamentary Constituencies" = "scotlandMsp","Scottish Councils Areas" = "scotlandCouncil"),selected = 'scotlandMsp'), 
                                uiOutput('rankStatusTable'), uiOutput('rank_select') ))
-                    )
->>>>>>> dev
+
                     
            ),tabPanel("Costing Improvements", fluidRow( column(6, p("The table below displays the target length in km of extra cycle path 
                                                                     required to reach 80% level of provision found in Amsterdam region 
