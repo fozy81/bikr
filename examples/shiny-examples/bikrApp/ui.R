@@ -15,11 +15,7 @@ tags$div()),
 
 hr(),
                     fluidRow(
-                    column(6,  htmlOutput('scotlandDetails'),  uiOutput('areaSelect'), tabsetPanel(
-                     tabPanel("Overall Rating", uiOutput('comparisonTable')),
-                     tabPanel ("NCN rating", uiOutput('comparisonMetric')), 
-                     tabPanel("Graph", uiOutput("comparisonStatusChart"))
-                    )),
+                    column(6,  htmlOutput('scotlandDetails'),  uiOutput('areaSelect'), uiOutput('tabs')),
                     column(6, tags$style(type="text/css",
                                          ".shiny-output-error { visibility: hidden; }",
                                          ".shiny-output-error:before { visibility: hidden; }"
@@ -31,7 +27,12 @@ hr(),
                                uiOutput('rankStatusTable'), uiOutput('rank_select') ))
                     )
                     
-           ),tabPanel("Costing Improvements", fluidRow( column(6, p("The table below displays the target length in km of extra cycle path required to reach 80% level of provision found in Amsterdam region or in other words 'Good' status according to this classification scheme. By altering the values selected below, you can control how quickly you wish to reach 'Good status' and set a default for the average cost of creating cycle path per km. These values determine the 'Projected Cost per year in GBP'."),
+           ),tabPanel("Costing Improvements", fluidRow( column(6, p("The table below displays the target length in km of extra cycle path 
+                                                                    required to reach 80% level of provision found in Amsterdam region 
+                                                                    or in other words 'Good' status according to this classification scheme. 
+                                                                    By altering the values selected below, you can control how quickly you wish
+                                                                    to reach 'Good status' and set a default for the average cost of creating
+                                                                    cycle path per km. These values determine the 'Projected Cost per year in GBP'."),
                                                       
                                                       numericInput("num", 
                                                                    label = p("Set the number of years to reach objective:"), 
