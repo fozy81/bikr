@@ -1,6 +1,5 @@
 library(rCharts)
 library(leaflet)
-library(RJSONIO)
 library(bikr)
 library(ggplot2)
 library(DT)
@@ -47,6 +46,7 @@ shinyServer(function(input, output, session) {
             if(input$adminLevel == 'scotlandCouncil'){
               return(e1)
             }
+    
    })
  
   output$areaSelect <- renderUI({
@@ -93,7 +93,7 @@ shinyServer(function(input, output, session) {
     }
     Areas <- geojson 
     m = leaflet()  %>%  
-      addTiles(group = "Dark CartoDB (default)", '//{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 
+      addTiles(group = "Dark CartoDB (default)", 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 
       attribution=HTML('&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,
                        &copy; <a href="http://cartodb.com/attributions">CartoDB</a>
                        &copy; <a href="http://www.thunderforest.com/">Thunderforest</a>
@@ -250,7 +250,7 @@ shinyServer(function(input, output, session) {
       # A rank tablewas clicked. Save its properties
       # to selectedFeature.
       data <- dstatus()
-      evt <- as.character(data[evt,1])
+      evt <- data$name[evt]
       values$selectedFeature$name <-  evt
     })
   })
@@ -272,7 +272,7 @@ shinyServer(function(input, output, session) {
   
   output$scotlandDetails <- renderUI({
       if (is.null(values$selectedFeature)){
-   p("Select an area from map or list for more detail")
+   p("Select an area from map or table for more detail")
     }
   })
   
@@ -282,8 +282,8 @@ shinyServer(function(input, output, session) {
   })
   
   output$details <- renderText({
-    if (is.null(values$selectedFeature))
-      return(NULL)  
+    if (is.null(values$selectedFeature)){
+      return(NULL)  }
     d <- dstatus()
     s <- sumdata()
     s$'commutingbybicycle'[s$'commutingbybicycle' == 0] <- "<1"
@@ -355,7 +355,7 @@ shinyServer(function(input, output, session) {
         data[1,1] <- "Overall Status" 
         row.names(data) <- NULL
    # data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
-  datatable(data,rownames = FALSE, options = list(searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(data[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ' )
+  datatable(data,rownames = FALSE, options = list(searching = FALSE,paging = FALSE,info = FALSE,server = FALSE,processing = FALSE))  %>% formatStyle(names(data[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ' )
        
   })
   
@@ -399,7 +399,7 @@ rural areas. Cycle paths are defined as paths separated from traffic, with a pav
        areaNames <- areaNames[order(areaNames)]
        names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
        
-   table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+   table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
   # return(table_sum)
    # }
   })
@@ -429,7 +429,7 @@ rural areas. Cycle paths are defined as paths separated from traffic, with a pav
        areaNames <- areaNames[order(areaNames)]
        names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
        
-   table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+   table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
    # return(table_sum)
    # }
     })
@@ -459,7 +459,7 @@ rural areas. Cycle paths are defined as paths separated from traffic, with a pav
     areaNames <- areaNames[order(areaNames)]
     names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
     
-    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
     # return(table_sum)
     # }
   })
@@ -484,13 +484,13 @@ the date of last edit, and the average number of updates made to bicycle infrast
     s_d$'Map Data Quality' <- quintileFunc(s_d$'Map Data Quality version norm')
     s_d$'lasteditdate' <- as.Date(s_d$'lasteditdate')
     metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Map Data Quality','editors','version','lasteditdate')])
-    col_names <- data.frame(c('Map Data Quality status','No. map editors','Average updates per map feature','Date of last map edited'))  #data.frame(rownames(metricTable)) - need units in dataframe
+    col_names <- data.frame(c('Map Data Quality status','No. map editors','Average updates per map feature','Date of last map edit'))  #data.frame(rownames(metricTable)) - need units in dataframe
     metricTable <- cbind(col_names, metricTable)
     areaNames <- c(values$selectedFeature$name, input$areaName)
     areaNames <- areaNames[order(areaNames)]
     names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
     
-    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
     # return(table_sum)
     # }
   })
@@ -528,16 +528,16 @@ the date of last edit, and the average number of updates made to bicycle infrast
     }
   })
 
-    output$description2  <- renderText({
+    output$descriptionCosts  <- renderText({
     
     description2 <- paste("Based on the values set above, the total cost of improving cycle infrastructure in Scotland to Good status is £ ", datasetTargetTotal()," Million per year. This includes a 'rural bias' which is a reduction in cost for rural areas which require less cyclepaths due to generally quieter roads and lower population density.",sep="") 
     description2 
   })
   
-  output$table2 <- DT::renderDataTable({
-  data <-  datasetTarget() 
-  data$Code <- NULL
- datatable(data, rownames = FALSE,selection = 'none', style= 'default', options = list(searching = TRUE,paging = FALSE,info = FALSE))  %>% formatStyle(names(data[1:5]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+  output$tableCosts <- DT::renderDataTable({
+  datas <-  datasetTarget() 
+  datas$Code <- NULL
+ datatable(datas, rownames = FALSE,selection = 'none', style= 'default', options = list(searching = TRUE,paging = FALSE,info = FALSE))  %>% formatStyle(names(datas[1:5]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
   }  )
   
   output$measuresTable <- renderDataTable({

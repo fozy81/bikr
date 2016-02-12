@@ -75,8 +75,8 @@ hr(),
                        fluidRow( column(6, (numericInput("cost", 
                                                          label = p("Set the value for the average cost £ per km of cycle path:"), 
                                                          value = 150000)))),
-                       htmlOutput('description2'),
-                       fluidRow(column(9, dataTableOutput('table2')))),   
+                       htmlOutput('descriptionCosts'),
+                       fluidRow(column(9, DT::dataTableOutput('tableCosts')))),   
           
 ### Future features for UI commented out below: 
  # ,tabPanel("Measures", fluidRow(column(6, p("Future forecast - based on proposed and under construction roads and cycle paths in OpenStreetMap"),dataTableOutput('measuresTable')))   
