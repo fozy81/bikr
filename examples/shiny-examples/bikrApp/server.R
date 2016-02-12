@@ -4,7 +4,7 @@ library(bikr)
 library(ggplot2)
 library(DT)
 
- d1 <- bicycleStatus(scotlandMsp)
+d1 <- bicycleStatus(scotlandMsp)
 d1$fillcolor <- ifelse(d1$Status == "High","#ffffb2","")
 d1$fillcolor <- ifelse(d1$Status == "Good","#fecc5c",d1$fillcolor)
 d1$fillcolor <- ifelse(d1$Status == "Moderate","#fd8d3c",d1$fillcolor)
@@ -22,105 +22,105 @@ e1$fillcolor <- ifelse(e1$Status == "Bad","#bd0026",e1$fillcolor)
 #geojsonFile <- fromJSON('examples/shinyapp/scotlandAmsterdam.json')
 #fileName <- fromJSON'scotlandAmsterdam.json'
 #geojsonFile <- readChar(fileName, file.info(fileName)$size)
- 
+
 
 
 shinyServer(function(input, output, session) {
- 
- 
-   sumdata <- reactive({
-            if(input$adminLevel == 'scotlandMsp'){
-       return(scotlandMsp)
+  
+  
+  sumdata <- reactive({
+    if(input$adminLevel == 'scotlandMsp'){
+      return(scotlandMsp)
     }
     if(input$adminLevel == 'scotlandCouncil'){
-         return(scotlandCouncil)
+      return(scotlandCouncil)
     }
- 
+    
   })
   
   
   dstatus <- reactive({
     if(input$adminLevel == 'scotlandMsp'){
       return(d1)
-      }
-            if(input$adminLevel == 'scotlandCouncil'){
-              return(e1)
-            }
+    }
+    if(input$adminLevel == 'scotlandCouncil'){
+      return(e1)
+    }
     
-   })
- 
+  })
+  
   output$areaSelect <- renderUI({
     if(!is.null(values$selectedFeature)){
-    d <- dstatus() 
-    selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Stadsregio Amsterdam')
-#     if (values$selectedFeature$name == "Stadsregio Amsterdam"){
-#       selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Malmo')
-#     }
-#     if (values$selectedFeature$name == input$areaName){
-#       selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Stadsregio Amsterdam')
-#     }
+      d <- dstatus() 
+      selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Stadsregio Amsterdam')
+      #     if (values$selectedFeature$name == "Stadsregio Amsterdam"){
+      #       selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Malmo')
+      #     }
+      #     if (values$selectedFeature$name == input$areaName){
+      #       selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Stadsregio Amsterdam')
+      #     }
     } 
-     })
+  })
   
   
-   geojsondata <- reactive({
-     
-            if(input$adminLevel == 'scotlandMsp'){
-     return(RJSONIO::fromJSON('scotlandMsp.json'))
-        
-          }
-     if(input$adminLevel == 'scotlandCouncil'){
-       return(RJSONIO::fromJSON('scotlandCouncil.json'))
-  
-     }
-     
-   })
+  geojsondata <- reactive({
+    
+    if(input$adminLevel == 'scotlandMsp'){
+      return(RJSONIO::fromJSON('scotlandMsp.json'))
+      
+    }
+    if(input$adminLevel == 'scotlandCouncil'){
+      return(RJSONIO::fromJSON('scotlandCouncil.json'))
+      
+    }
+    
+  })
   
   
   output$map <- renderLeaflet({
     
-      geojson <- geojsondata()
-      Areas <- geojson 
+    geojson <- geojsondata()
+    Areas <- geojson 
     d <- dstatus()
     col_areas = factor(c("High","Good","Moderate","Poor","Bad"),levels = c("High","Good","Moderate","Poor","Bad"),ordered=TRUE)
     pal <- colorFactor(c("#ffffb2","#fecc5c","#fd8d3c","#f03b20","#bd0026"),levels =  col_areas ,ordered=TRUE)
     for (i in 1:length(d[,1])){
       
       geojson$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
-                                                            fill = "true", opacity = 0.8,
-                                                            fillOpacity = 0.8, color= paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]),
-                                                            fillColor = paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]))
+                                                        fill = "true", opacity = 0.8,
+                                                        fillOpacity = 0.8, color= paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]),
+                                                        fillColor = paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]))
     }
     Areas <- geojson 
     m = leaflet()  %>%  
       addTiles(group = "Dark CartoDB (default)", 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', 
-      attribution=HTML('&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,
-                       &copy; <a href="http://cartodb.com/attributions">CartoDB</a>
-                       &copy; <a href="http://www.thunderforest.com/">Thunderforest</a>
-                        &copy; <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a>')) %>%
-              addGeoJSON( Areas , group = "Areas") %>% 
+               attribution=HTML('&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,
+                                &copy; <a href="http://cartodb.com/attributions">CartoDB</a>
+                                &copy; <a href="http://www.thunderforest.com/">Thunderforest</a>
+                                &copy; <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a>')) %>%
+      addGeoJSON( Areas , group = "Areas") %>% 
       addTiles(group = "OpenCycleMap", 'https://c.tile.thunderforest.com/cycle/{z}/{x}/{y}.png',
-                         attribution=HTML('&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,
-                       &copy; <a href="http://cartodb.com/attributions">CartoDB</a>
-                       &copy; <a href="http://www.thunderforest.com/">Thunderforest</a>
-                        &copy; <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a>')) %>%
+               attribution=HTML('&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors,
+                                &copy; <a href="http://cartodb.com/attributions">CartoDB</a>
+                                &copy; <a href="http://www.thunderforest.com/">Thunderforest</a>
+                                &copy; <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a>')) %>%
       addLayersControl(
         baseGroups = c("Dark CartoDB (default)", "OpenCycleMap"),
         overlayGroups = c("Areas"),
-       
+        
         options = c(layersControlOptions(collapsed = TRUE), fillOpacity = 1)
       ) %>%
-    setView(3.911, 56.170, zoom = 5 ) %>%
-     
+      setView(3.911, 56.170, zoom = 5 ) %>%
+      
       addLegend("bottomright", pal = pal,
                 values = col_areas,
                 title = "Overall Status",
-                  opacity = 0.8
+                opacity = 0.8
       ) 
-   # addMarkers(~Long, ~Lat, popup = ~htmlEscape(geojson$features))
-    })
+    # addMarkers(~Long, ~Lat, popup = ~htmlEscape(geojson$features))
+  })
   
-
+  
   values <- reactiveValues(selectedFeature = NULL)
   
   observe({
@@ -146,8 +146,8 @@ shinyServer(function(input, output, session) {
       values$selectedFeature <- evt$properties
     })
   })
-
-
+  
+  
   
   datasetTargetTotal <- reactive({
     d <- dstatus()
@@ -166,7 +166,7 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$scotlandOverview, {
     values$selectedFeature <- NULL
- 
+    
   })
   
   
@@ -177,68 +177,68 @@ shinyServer(function(input, output, session) {
   }
   
   
- colourFunc <- function(x) {
+  colourFunc <- function(x) {
     test <- as.character(cut(x, breaks = c(0, 0.2, 0.4, 0.6, 
                                            0.8, 1), include.lowest = TRUE, labels = c("color:#bd0026", "color:#f03b20","color:#fd8d3c", "color:#fecc5c","color:#ffffb2"
-                                                                                      )))
+                                           )))
   }
-
+  
   
   output$description  <- renderText({
     if(is.null(values$selectedFeature)){
       d1 <- dstatus()
       
       tx <- mean(d1[,c('Total normalised')])
-#       quintileFunc <- function(x) {
-#         test <- as.character(cut(x, breaks = c(0, 0.2, 0.4, 0.6, 
-#                                                0.8, 1), include.lowest = TRUE, labels = c("Bad", 
-#                                                                                         "Poor", "Moderate", "Good", "High")))
-#       }
+      #       quintileFunc <- function(x) {
+      #         test <- as.character(cut(x, breaks = c(0, 0.2, 0.4, 0.6, 
+      #                                                0.8, 1), include.lowest = TRUE, labels = c("Bad", 
+      #                                                                                         "Poor", "Moderate", "Good", "High")))
+      #       }
       statusOverall <- quintileFunc(tx)
       mx <- mean(d1[,c('Map Data Quality version norm')])
       dataQualityOverall <- quintileFunc(mx)
-     # x <- mean(d1[,c('Total normalised')])
+      # x <- mean(d1[,c('Total normalised')])
       textColour <- colourFunc(tx) 
       description <- paste(p("Area: ",tags$span(style="color:#ffffff", "Scotland")),
-                          p("Overall Status: ",tags$span(style= textColour, statusOverall, opacity= 0.8)),
+                           p("Overall Status: ",tags$span(style= textColour, statusOverall, opacity= 0.8)),
                            p("Traffic-free cycle paths: ",tags$span(style = "color:#ffffff", sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('cyclepath')])),("km")),
-                          p("Bicycle parking spaces: ",tags$span(style= "color:#ffffff",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('bicycleparking')]))),
+                           p("Bicycle parking spaces: ",tags$span(style= "color:#ffffff",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('bicycleparking')]))),
                            p("NCN length: ",tags$span(style="color:#ffffff",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('routes')])),"km"),
-                          hr(),
-                          h4("Confidence in map data quality: ",  dataQualityOverall)
-                          )
+                           hr(),
+                           h4("Confidence in map data quality: ",  dataQualityOverall)
+      )
       
-#       description <- paste("The cycle infrastructure in Scotland consists of ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('cyclepath')]),
-#                            "km of cycle path (separated from motor-vehicle traffic), approximately ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('bicycleparking')]), 
-#                            " bicycle parking spaces and ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('routes')]),
-#                            "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(mean(d$'cyclepath to road ratio'[d$areacode == 'COU' | d$areacode == 'UTA'] * 100,digits=0)),
-#                            "%, this compares to ", round(max(d$'cyclepath to road ratio'[d$name == 'Stadsregio Amsterdam'] * 100,digits=0)),"% in the Amsterdam region.",
-#                            sep="")   
-    return(description)
-      }
+      #       description <- paste("The cycle infrastructure in Scotland consists of ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('cyclepath')]),
+      #                            "km of cycle path (separated from motor-vehicle traffic), approximately ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('bicycleparking')]), 
+      #                            " bicycle parking spaces and ",sum(scotlandAmsterdam[scotlandAmsterdam$areacode == 'COU',c('routes')]),
+      #                            "km of National Cycle Network routes. The ratio of paved road highway to cycle path is ", round(mean(d$'cyclepath to road ratio'[d$areacode == 'COU' | d$areacode == 'UTA'] * 100,digits=0)),
+      #                            "%, this compares to ", round(max(d$'cyclepath to road ratio'[d$name == 'Stadsregio Amsterdam'] * 100,digits=0)),"% in the Amsterdam region.",
+      #                            sep="")   
+      return(description)
+    }
   })
   
   
   output$rankTable  <- DT::renderDataTable({
-         d <- dstatus()
-         s <- sumdata()
-         s <- s[with(s, order(name)), ]
-         d <- d[with(d, order(name)), ]
-         d <- cbind(s,d)
-         d$commutingbybicycle[d$commutingbybicycle == 0] <- "<1"
-         d <- d[with(d, order(Rank)), ]
-      rankTable <- d[,c('name','commutingbybicycle','Status','Rank')]
-      names(rankTable) <- c('Name','% Commuting by bicycle','Status','Rank')
-      datatable( rankTable ,rownames = FALSE,selection = 'single', options = list(searching = TRUE,paging = FALSE,info = FALSE)) %>% formatStyle(names(rankTable[1:4]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ') 
-      
+    d <- dstatus()
+    s <- sumdata()
+    s <- s[with(s, order(name)), ]
+    d <- d[with(d, order(name)), ]
+    d <- cbind(s,d)
+    d$commutingbybicycle[d$commutingbybicycle == 0] <- "<1"
+    d <- d[with(d, order(Rank)), ]
+    rankTable <- d[,c('name','commutingbybicycle','Status','Rank')]
+    names(rankTable) <- c('Name','% Commuting by bicycle','Status','Rank')
+    datatable( rankTable ,rownames = FALSE,selection = 'single', options = list(searching = TRUE,paging = FALSE,info = FALSE)) %>% formatStyle(names(rankTable[1:4]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ') 
+    
   })
-
+  
   
   output$rankStatusTable <- renderUI({
-  #  if (is.null(values$selectedFeature)){
+    #  if (is.null(values$selectedFeature)){
     list(h3("Overall Status and Rank"),DT::dataTableOutput('rankTable'))
     #}
-    })
+  })
   
   
   observe({
@@ -255,30 +255,30 @@ shinyServer(function(input, output, session) {
     })
   })
   
-#   output$rank_select = renderPrint({
-#     s = input$rankTable_rows_selected
-#     if (length(s)) {
-#       cat('These rows were selected:\n\n')
-#       cat(s, sep = ', ')
-#     }
-#   })
+  #   output$rank_select = renderPrint({
+  #     s = input$rankTable_rows_selected
+  #     if (length(s)) {
+  #       cat('These rows were selected:\n\n')
+  #       cat(s, sep = ', ')
+  #     }
+  #   })
   
   pleaseClickMap <- reactive({
-  if ( is.null(input$scotlandOverview)){
-    return(h3("Please select area on the map:"))
-  }
+    if ( is.null(input$scotlandOverview)){
+      return(h3("Please select area on the map:"))
+    }
   }
   )
   
   output$scotlandDetails <- renderUI({
-      if (is.null(values$selectedFeature)){
-   p("Select an area from map or table for more detail")
+    if (is.null(values$selectedFeature)){
+      p("Select an area from map or table for more detail")
     }
   })
   
   output$pleaseClick <- renderUI({
     
- pleaseClickMap()
+    pleaseClickMap()
   })
   
   output$details <- renderText({
@@ -295,80 +295,80 @@ shinyServer(function(input, output, session) {
     description <- paste(
       p("Area: ",tags$span(style="color:#ffffff", values$selectedFeature$name)),
       p("Rank: ", tags$span(style="color:#ffffff", d$'Rank'[d[,c('name')] == values$selectedFeature$name]," out of ",length(d[,c('name')]))),
-                         p("Overall Status: ",tags$span(style= textColour, d$'Status'[d[,c('name')] == values$selectedFeature$name])),
-                         p("Traffic-free cycle paths: ",tags$span(style="color:#ffffff", s$'cyclepath'[s[,c('name')] == values$selectedFeature$name]),("km")),
-                         p("Bicycle parking spaces: ",tags$span( style="color:#ffffff",s$'bicycleparking'[s[,c('name')] == values$selectedFeature$name])),
-                         p("NCN length: ",tags$span(style="color:#ffffff", s$'routes'[s[,c('name')] == values$selectedFeature$name]), "km"),
-                         hr(),
-                         h4("Confidence in map data quality: ", tags$span(style=  mapColour, dataQualityOverall)),
-                         h4("% communting by bicycle: ", tags$span(style="color:#ffffff", s$'commutingbybicycle'[s[,c('name')] == values$selectedFeature$name])),
-                         actionButton('scotlandOverview', h4('Return to Scotland overview'))
+      p("Overall Status: ",tags$span(style= textColour, d$'Status'[d[,c('name')] == values$selectedFeature$name])),
+      p("Traffic-free cycle paths: ",tags$span(style="color:#ffffff", s$'cyclepath'[s[,c('name')] == values$selectedFeature$name]),("km")),
+      p("Bicycle parking spaces: ",tags$span( style="color:#ffffff",s$'bicycleparking'[s[,c('name')] == values$selectedFeature$name])),
+      p("NCN length: ",tags$span(style="color:#ffffff", s$'routes'[s[,c('name')] == values$selectedFeature$name]), "km"),
+      hr(),
+      h4("Confidence in map data quality: ", tags$span(style=  mapColour, dataQualityOverall)),
+      h4("% communting by bicycle: ", tags$span(style="color:#ffffff", s$'commutingbybicycle'[s[,c('name')] == values$selectedFeature$name])),
+      actionButton('scotlandOverview', h4('Return to Scotland overview'))
     )
     
     return(description)
   })
-    # Render values$selectedFeature, if it isn't NULL.
-#     if (is.null(values$selectedFeature))
-#       return(NULL)  
-#     d <- dstatus()
-#     as.character(tags$div(
-#       tags$h3(values$selectedFeature$name),
-#       tags$h3(
-#         "Rank:",paste(d$'Rank'[d[,c('name')] == values$selectedFeature$name]," out of ",length(d[,c('name')]))),
-#       tags$p(paste(d$'Description'[d[,c('name')] == values$selectedFeature$name])),
-#        actionButton('scotlandOverview', 'Return to Scotland overview')
-#     ))
+  # Render values$selectedFeature, if it isn't NULL.
+  #     if (is.null(values$selectedFeature))
+  #       return(NULL)  
+  #     d <- dstatus()
+  #     as.character(tags$div(
+  #       tags$h3(values$selectedFeature$name),
+  #       tags$h3(
+  #         "Rank:",paste(d$'Rank'[d[,c('name')] == values$selectedFeature$name]," out of ",length(d[,c('name')]))),
+  #       tags$p(paste(d$'Description'[d[,c('name')] == values$selectedFeature$name])),
+  #        actionButton('scotlandOverview', 'Return to Scotland overview')
+  #     ))
   
   output$tabs <- renderUI({
     if (!is.null(values$selectedFeature)){
-    tabsetPanel(
-                       tabPanel("Overall Rating", uiOutput('comparisonTable')),
-                       tabPanel ("Cyclepath", uiOutput('comparisonMetric')), 
-                       tabPanel("Bicycle parking", uiOutput("comparisonParking")),
-                       tabPanel("National Cycle Network", uiOutput("comparisonNCN")),
-                       tabPanel("Map data quality", uiOutput("comparisonMap"))
-                      )
+      tabsetPanel(
+        tabPanel("Overall Rating", uiOutput('comparisonTable')),
+        tabPanel ("Cyclepath", uiOutput('comparisonMetric')), 
+        tabPanel("Bicycle parking", uiOutput("comparisonParking")),
+        tabPanel("National Cycle Network", uiOutput("comparisonNCN")),
+        tabPanel("Map data quality", uiOutput("comparisonMap"))
+      )
     }
   })
   
   output$comparisonStatusTable = DT::renderDataTable({
-          d <- dstatus()
-        x <- d$'Map Data Quality version norm'[d[,c('name')] == values$selectedFeature$name]
-        dataQualityOverall <- data.frame(quintileFunc(x))
-        rownames(dataQualityOverall) <- c('Map Data Quality')
-        names( dataQualityOverall) <- c("Key Elements")
-        x <- d$'Map Data Quality version norm'[d[,c('name')] == input$areaName]
-        dataQualityOverallAmsterdam <- data.frame(quintileFunc(x))
-        rownames(dataQualityOverallAmsterdam) <- c('Map Data Quality')
-        names( dataQualityOverallAmsterdam) <- c("Key Elements")
+    d <- dstatus()
+    x <- d$'Map Data Quality version norm'[d[,c('name')] == values$selectedFeature$name]
+    dataQualityOverall <- data.frame(quintileFunc(x))
+    rownames(dataQualityOverall) <- c('Map Data Quality')
+    names( dataQualityOverall) <- c("Key Elements")
+    x <- d$'Map Data Quality version norm'[d[,c('name')] == input$areaName]
+    dataQualityOverallAmsterdam <- data.frame(quintileFunc(x))
+    rownames(dataQualityOverallAmsterdam) <- c('Map Data Quality')
+    names( dataQualityOverallAmsterdam) <- c("Key Elements")
     data3 <- data.frame(t(d[d[,1] == input$areaName,c('Status','Cycle path status','Bicycle parking status','National cycle network status')]))
     names(data3) <- c("Key Elements")
     data3 <- rbind(data3, dataQualityOverallAmsterdam)
     data4 <- data.frame(t(d[d[,1] == values$selectedFeature$name,c('Status','Cycle path status','Bicycle parking status','National cycle network status')]))
     names(data4) <- c("Key Elements")
-     data4 <- rbind(data4, dataQualityOverall)
-
+    data4 <- rbind(data4, dataQualityOverall)
+    
     data <- cbind(rownames(data3),data4,data3)
-   
-        names(data) <- c("Key Elements",values$selectedFeature$name,input$areaName)
-        data[,1] <- as.character(data[,1])
-        data[1,1] <- "Overall Status" 
-        row.names(data) <- NULL
-   # data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
-  datatable(data,rownames = FALSE, options = list(searching = FALSE,paging = FALSE,info = FALSE,server = FALSE,processing = FALSE))  %>% formatStyle(names(data[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ' )
-       
+    
+    names(data) <- c("Key Elements",values$selectedFeature$name,input$areaName)
+    data[,1] <- as.character(data[,1])
+    data[1,1] <- "Overall Status" 
+    row.names(data) <- NULL
+    # data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
+    datatable(data,rownames = FALSE, options = list(searching = FALSE,paging = FALSE,info = FALSE,server = FALSE,processing = FALSE))  %>% formatStyle(names(data[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ' )
+    
   })
   
   output$comparisonTable <- renderUI({
     if (!is.null(values$selectedFeature)){
-   
+      
       list(DT::dataTableOutput('comparisonStatusTable'),
            h4("The overall status is calculated by combining all sub elements excluding the map quality element. The 
-elements are all normalised against the amount of infrastructure found in the Amsterdam region. Some allowances are
-made for rural areas and a weighting is used to balance in favour of total Cycle Path element. See the other tabs for further 
+              elements are all normalised against the amount of infrastructure found in the Amsterdam region. Some allowances are
+              made for rural areas and a weighting is used to balance in favour of total Cycle Path element. See the other tabs for further 
               information on how each individual element is calculated" ))
-          }
-      })
+    }
+    })
   
   output$comparisonMetric <- renderUI({
     if (!is.null(values$selectedFeature)){
@@ -377,12 +377,12 @@ made for rural areas and a weighting is used to balance in favour of total Cycle
                                                             of road to cycle path. Rural areas, where road traffic is much
                                                             lower won't necessarily require such a high ratio of cycle path to 
                                                             road therefore road density (road/area) is used to biase in favour of 
-rural areas. Cycle paths are defined as paths separated from traffic, with a paved surface which may or may not be shared
+                                                            rural areas. Cycle paths are defined as paths separated from traffic, with a paved surface which may or may not be shared
                                                             with pedestrians. Roads are defined as any paved road with vehicle access exlcuding
                                                             'service' roads such as car park aisles or driveways."))
     }
-  })
-
+    })
+  
   output$comparisonTableMetric = DT::renderDataTable({
     # row_selected = input$comparisonStatusTable_row_last_clicked
     s_d <- sumdata()
@@ -391,17 +391,17 @@ rural areas. Cycle paths are defined as paths separated from traffic, with a pav
     d <- d[with(d, order(name)), ]
     s_d <- cbind(s_d,d)
     # if (length(row_selected)) {
-  
-      metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Cycle path status','cyclepath','road','area')])
-        col_names <- data.frame(c('Cycle path status','Cylepath (km)','Road (km)','Area (meters)'))  #data.frame(rownames(metricTable)) - need units in dataframe
-       metricTable <- cbind(col_names, metricTable)
-       areaNames <- c(values$selectedFeature$name, input$areaName)
-       areaNames <- areaNames[order(areaNames)]
-       names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
-       
-   table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
-  # return(table_sum)
-   # }
+    
+    metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Cycle path status','cyclepath','road','area')])
+    col_names <- data.frame(c('Cycle path status','Cylepath (km)','Road (km)','Area (meters)'))  #data.frame(rownames(metricTable)) - need units in dataframe
+    metricTable <- cbind(col_names, metricTable)
+    areaNames <- c(values$selectedFeature$name, input$areaName)
+    areaNames <- areaNames[order(areaNames)]
+    names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
+    
+    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    # return(table_sum)
+    # }
   })
   
   
@@ -409,10 +409,10 @@ rural areas. Cycle paths are defined as paths separated from traffic, with a pav
     if (!is.null(values$selectedFeature)){
       
       list( DT::dataTableOutput('comparisonTableParking'),h4("The bicycle parking status is calculated based on the ratio
-                                                            of bicycle parking points divided by area."))
+                                                             of bicycle parking points divided by area."))
     }
-  })
-
+    })
+  
   output$comparisonTableParking = DT::renderDataTable({
     # row_selected = input$comparisonStatusTable_row_last_clicked
     s_d <- sumdata()
@@ -421,27 +421,27 @@ rural areas. Cycle paths are defined as paths separated from traffic, with a pav
     d <- d[with(d, order(name)), ]
     s_d <- cbind(s_d,d)
     # if (length(row_selected)) {
-  
-      metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Bicycle parking status','bicycleparking','area','area to bicycle parking ratio norm')])
-        col_names <- data.frame(c('Bicycle parking status','No. bicyle parking points','Area (meters)','area to bicycle parking ratio normalised'))  #data.frame(rownames(metricTable)) - need units in dataframe
-       metricTable <- cbind(col_names, metricTable)
-       areaNames <- c(values$selectedFeature$name, input$areaName)
-       areaNames <- areaNames[order(areaNames)]
-       names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
-       
-   table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
-   # return(table_sum)
-   # }
-    })
+    
+    metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Bicycle parking status','bicycleparking','area','area to bicycle parking ratio norm')])
+    col_names <- data.frame(c('Bicycle parking status','No. bicyle parking points','Area (meters)','area to bicycle parking ratio normalised'))  #data.frame(rownames(metricTable)) - need units in dataframe
+    metricTable <- cbind(col_names, metricTable)
+    areaNames <- c(values$selectedFeature$name, input$areaName)
+    areaNames <- areaNames[order(areaNames)]
+    names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
+    
+    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    # return(table_sum)
+    # }
+  })
   
   output$comparisonNCN <- renderUI({
     if (!is.null(values$selectedFeature)){
       
       list( DT::dataTableOutput('comparisonTableNCN'),h4("The National Cycle Network status is calculated based on the ratio
-                                                            of NCN route divided by road total road length within area. This is normalised
+                                                         of NCN route divided by road total road length within area. This is normalised
                                                          against the ratio found in Amsterdam"))
     }
-  })
+    })
   
   output$comparisonTableNCN = DT::renderDataTable({
     # row_selected = input$comparisonStatusTable_row_last_clicked
@@ -468,10 +468,10 @@ rural areas. Cycle paths are defined as paths separated from traffic, with a pav
     if (!is.null(values$selectedFeature)){
       
       list( DT::dataTableOutput('comparisonTableMap'),h4("The map quality status is calculated based on the number of OpenStreetMap editors, 
-the date of last edit, and the average number of updates made to bicycle infrastructure features. Allowances are made for area size and ruralness. The
+                                                         the date of last edit, and the average number of updates made to bicycle infrastructure features. Allowances are made for area size and ruralness. The
                                                          value is then normalised against Amsterdam region"))
     }
-  })
+    })
   
   output$comparisonTableMap = DT::renderDataTable({
     # row_selected = input$comparisonStatusTable_row_last_clicked
@@ -524,20 +524,20 @@ the date of last edit, and the average number of updates made to bicycle infrast
   
   output$comparisonStatusChart <- renderUI({
     if (!is.null(values$selectedFeature)){
-    list("Comparison Chart", plotOutput("chart2"))
+      list("Comparison Chart", plotOutput("chart2"))
     }
   })
-
-    output$descriptionCosts  <- renderText({
+  
+  output$descriptionCosts  <- renderText({
     
     description2 <- paste("Based on the values set above, the total cost of improving cycle infrastructure in Scotland to Good status is £ ", datasetTargetTotal()," Million per year. This includes a 'rural bias' which is a reduction in cost for rural areas which require less cyclepaths due to generally quieter roads and lower population density.",sep="") 
     description2 
   })
   
   output$tableCosts <- DT::renderDataTable({
-  datas <-  datasetTarget() 
-  datas$Code <- NULL
- datatable(datas, rownames = FALSE,selection = 'none', style= 'default', options = list(searching = TRUE,paging = FALSE,info = FALSE))  %>% formatStyle(names(datas[1:5]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    datas <-  datasetTarget() 
+    datas$Code <- NULL
+    datatable(datas, rownames = FALSE,selection = 'none', style= 'default', options = list(searching = TRUE,paging = FALSE,info = FALSE))  %>% formatStyle(names(datas[1:5]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
   }  )
   
   output$measuresTable <- renderDataTable({
@@ -557,35 +557,34 @@ the date of last edit, and the average number of updates made to bicycle infrast
     d$name <- factor(d$name, levels = d$name[order(d$'Total normalised')])
     Overall_Status <- d$'Status'
     p2 <-  qplot(x = d$name,  y= d$'% Commuting By Bicycle', geom="bar",fill=Overall_Status, stat="identity",xlab="Area",ylab="Percentage communting by bicycle") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-  
-
-# renderChart... dimple etc
-#     p2 <- dPlot(
-#         y =  '% Commuting By Bicycle' ,
-#       x = "Status",
-#       data = d,
-#       type = "bar",
-#       bounds = list(x = 50, y = 50, height = 250, width = 300)
-#     )
-#     p2$set(dom = "chartOutcome")
-#   #  p2$xAxis(orderRule = "Date")
+    
+    
+    # renderChart... dimple etc
+    #     p2 <- dPlot(
+    #         y =  '% Commuting By Bicycle' ,
+    #       x = "Status",
+    #       data = d,
+    #       type = "bar",
+    #       bounds = list(x = 50, y = 50, height = 250, width = 300)
+    #     )
+    #     p2$set(dom = "chartOutcome")
+    #   #  p2$xAxis(orderRule = "Date")
     return(p2)
   })
   
   
   sandboxData <- reactive({
-        return(bicycleStatus(sumdata(),bicycleParkingWeight=input$bicyleParkingWeight,routeWeight=input$routeWeight,cyclePathWeight=input$bicyclePathWeight,ruralWeight=input$ruralWeight))
+    return(bicycleStatus(sumdata(),bicycleParkingWeight=input$bicyleParkingWeight,routeWeight=input$routeWeight,cyclePathWeight=input$bicyclePathWeight,ruralWeight=input$ruralWeight))
   })
   
   output$sandboxTable <- renderDataTable({
     d <- sandboxData()
     d
   },options = list(searching = TRUE,paging = FALSE))
+  
+  
+    })
 
-  
-  })
-  
- 
 
 
 

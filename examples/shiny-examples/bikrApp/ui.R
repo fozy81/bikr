@@ -3,71 +3,36 @@ library(rCharts)
 
 
 shinyUI(
-
-  navbarPage( 
-  title = 'V3LO-SCAPE - Tracking the quality of bicycle infrastructure in your area',
-  tabPanel('Classification',
-           includeScript("spin.min.js"),
-           fluidRow(column(12,uiOutput('pleaseClick'),
-                          leafletOutput("mymap"),    tags$script("var spinner = new Spinner().spin();
-                                                              $( 'div#mymap' ).append(spinner.el);"),
-                          tags$script('
-  Shiny.addCustomMessageHandler("map_done",
-        function(s) {
-          spinner.stop();
-          $( "div#mymap" ).remove(spinner);
-        });')
-                          
-                          ),
-# test
-tags$div(
-  HTML('<a href="https://github.com/fozy81/bikr"><img style="position: absolute; top: 25; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>')),
-htmlOutput("details"),
-                    fluidRow(column(7, offset = 1,tags$style(type="text/css",
-                                                 ".shiny-output-error { visibility: hidden; }",
-                                                 ".shiny-output-error:before { visibility: hidden; }"
-                    ),hr(),
-                    h4("This site uses bicycle infrastructure data from",tags$a(href="http://www.openstreetmap.org/#map=10/55.9496/-3.8809&layers=C","OpenStreetMap"), "to classify the level of provision in a given area. The classification is created by standardising against data from Amsterdam region as a reference condition of 'High' status."),
-                    h4("Find out more, get the data and contribute to the project", tags$a(href="https://github.com/fozy81/bikr","here")),
-                    htmlOutput('description'),
-                    selectInput("adminLevel","Switch admin level in Scotland",choices = c("Scottish Parliamentary Constituencies" = "scotlandMsp","Scottish Councils Areas" = "scotlandCouncil"),selected = 'scotlandMsp'), 
-                    uiOutput('rankStatusTable'),
-                     uiOutput('areaSelect'), 
-                    uiOutput('comparisonTable')),
-                    
-                    fluidRow(column(7, offset = 1, uiOutput("comparisonStatusChart")
-                    )))
-
   navbarPage( theme = "bootstrap.min.css",
-  title = 'Rate bicycle infrastructure in your area against Amsterdam!',
-  tabPanel('Current Status', 
-           fluidRow(column(6, htmlOutput("description"),   htmlOutput('details')),
-             column(6, wellPanel(uiOutput('pleaseClick'),
-                          leafletOutput("map"))),
-
-tags$div()),
- # HTML('<a href="https://github.com/fozy81/bikr"><img style="position: absolute; top: 25; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>')),
-
-hr(),
-                    fluidRow(
-                    column(6,  htmlOutput('scotlandDetails'),  uiOutput('areaSelect'), uiOutput('tabs')),
-                    column(6, tags$style(type="text/css",
-                                         ".shiny-output-error { visibility: hidden; }",
-                                         ".shiny-output-error:before { visibility: hidden; }"
-                    ),
-                    wellPanel(
-                      #h4("This site uses bicycle infrastructure data from",tags$a(href="http://www.openstreetmap.org/#map=10/55.9496/-3.8809&layers=C","OpenStreetMap"), "to classify the level of provision in a given area. The classification is created by standardising against data from Amsterdam region as a reference condition of 'High' status."),
-                       #         h4("Find out more, get the data and contribute to the project", tags$a(href="https://github.com/fozy81/bikr","here")),
-                               selectInput("adminLevel","Switch admin level in Scotland",choices = c("Scottish Parliamentary Constituencies" = "scotlandMsp","Scottish Councils Areas" = "scotlandCouncil"),selected = 'scotlandMsp'), 
-                               uiOutput('rankStatusTable'), uiOutput('rank_select') ))
-
-                    
-           ),tabPanel("Costing Improvements", fluidRow( column(6, p("The table below displays the target length in km of extra cycle path 
+              title = 'Rate bicycle infrastructure in your area against Amsterdam!',
+              tabPanel('Current Status', 
+                       fluidRow(column(6, htmlOutput("description"),   htmlOutput('details')),
+                                column(6, wellPanel(uiOutput('pleaseClick'),
+                                                    leafletOutput("map"))),
+                                
+                                tags$div()),
+                       # HTML('<a href="https://github.com/fozy81/bikr"><img style="position: absolute; top: 25; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>')),
+                       
+                       hr(),
+                       fluidRow(
+                         column(6,  htmlOutput('scotlandDetails'),  uiOutput('areaSelect'), uiOutput('tabs')),
+                         column(6, tags$style(type="text/css",
+                                              ".shiny-output-error { visibility: hidden; }",
+                                              ".shiny-output-error:before { visibility: hidden; }"
+                         ),
+                         wellPanel(
+                           #h4("This site uses bicycle infrastructure data from",tags$a(href="http://www.openstreetmap.org/#map=10/55.9496/-3.8809&layers=C","OpenStreetMap"), "to classify the level of provision in a given area. The classification is created by standardising against data from Amsterdam region as a reference condition of 'High' status."),
+                           #         h4("Find out more, get the data and contribute to the project", tags$a(href="https://github.com/fozy81/bikr","here")),
+                           selectInput("adminLevel","Switch admin level in Scotland",choices = c("Scottish Parliamentary Constituencies" = "scotlandMsp","Scottish Councils Areas" = "scotlandCouncil"),selected = 'scotlandMsp'), 
+                           uiOutput('rankStatusTable'), uiOutput('rank_select') ))
+                       )
+                       
+              ),tabPanel("Costing Improvements", fluidRow( column(6, p("The table below displays the target length in km of extra cycle path 
                                                                     required to reach 80% level of provision found in Amsterdam region 
-                                                                    or in other words 'Good' status according to this classification scheme. 
-                                                                    By altering the values selected below, you can control how quickly you wish
-                                                                    to reach 'Good status' and set a default for the average cost of creating
-                                                                    cycle path per km. These values determine the 'Projected Cost per year in GBP'."),
+                                                                       or in other words 'Good' status according to this classification scheme. 
+                                                                       By altering the values selected below, you can control how quickly you wish
+                                                                       to reach 'Good status' and set a default for the average cost of creating
+                                                                       cycle path per km. These values determine the 'Projected Cost per year in GBP'."),
                                                       
                                                       numericInput("num", 
                                                                    label = p("Set the number of years to reach objective:"), 
