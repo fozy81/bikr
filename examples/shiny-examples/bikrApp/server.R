@@ -23,47 +23,36 @@ e1$fillcolor <- ifelse(e1$Status == "Bad","#bd0026",e1$fillcolor)
 #fileName <- fromJSON'scotlandAmsterdam.json'
 #geojsonFile <- readChar(fileName, file.info(fileName)$size)
 
-
-
 shinyServer(function(input, output, session) {
   
   
   sumdata <- reactive({
     if(input$adminLevel == 'scotlandMsp'){
-      return(scotlandMsp)
+         scotlandMsp <- scotlandMsp[with(scotlandMsp, order(name)), ]
+      d1 <- d1[with(d1, order(name)), ]
+      return(merge(scotlandMsp,d1,by.x = c('name','areacode','commutingbybicycle','version'), by.y = c('name','areacode','commutingbybicycle','version')))
+      
     }
+    
     if(input$adminLevel == 'scotlandCouncil'){
-      return(scotlandCouncil)
+      scotlandCouncil <- scotlandCouncil[with(scotlandCouncil, order(name)), ]
+      d2 <- e1[with(e1, order(name)), ]
+      return(cbind(scotlandCouncil,d2))
+      
     }
     
   })
   
-  
-  dstatus <- reactive({
-    if(input$adminLevel == 'scotlandMsp'){
-      return(d1)
-    }
-    if(input$adminLevel == 'scotlandCouncil'){
-      return(e1)
-    }
-    
-  })
   
   output$areaSelect <- renderUI({
     if(!is.null(values$selectedFeature)){
-      d <- dstatus() 
+      d <-sumdata() 
       selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Stadsregio Amsterdam')
-      #     if (values$selectedFeature$name == "Stadsregio Amsterdam"){
-      #       selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Malmo')
-      #     }
-      #     if (values$selectedFeature$name == input$areaName){
-      #       selectInput("areaName","Compare against:",choices = c(sort(d$name,decreasing=F)),selected = 'Stadsregio Amsterdam')
-      #     }
+
     } 
   })
   
-  
-  geojsondata <- reactive({
+    geojsondata <- reactive({
     
     if(input$adminLevel == 'scotlandMsp'){
       return(RJSONIO::fromJSON('scotlandMsp.json'))
@@ -81,7 +70,7 @@ shinyServer(function(input, output, session) {
     
     geojson <- geojsondata()
     Areas <- geojson 
-    d <- dstatus()
+    d <-sumdata()
     col_areas = factor(c("High","Good","Moderate","Poor","Bad"),levels = c("High","Good","Moderate","Poor","Bad"),ordered=TRUE)
     pal <- colorFactor(c("#ffffb2","#fecc5c","#fd8d3c","#f03b20","#bd0026"),levels =  col_areas ,ordered=TRUE)
     for (i in 1:length(d[,1])){
@@ -117,7 +106,7 @@ shinyServer(function(input, output, session) {
                 title = "Overall Status",
                 opacity = 0.8
       ) 
-    # addMarkers(~Long, ~Lat, popup = ~htmlEscape(geojson$features))
+
   })
   
   
@@ -148,19 +137,16 @@ shinyServer(function(input, output, session) {
   })
   
   
-  
   datasetTargetTotal <- reactive({
-    d <- dstatus()
-    sumdata <- sumdata() 
-    data <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
+    data <- bicycleTarget(summary= bicycleStatus(eval(parse(text=paste(input$adminLevel)))),status= eval(parse(text=paste(input$adminLevel))),
+                          completion=input$num, cost=input$cost)
     data <- sum(as.numeric(as.character(data$'Projected Cost per year Million GBP'[data$Code == 'COU' | data$Code == 'UTA'])))
     data
   })
   
   datasetTarget <- reactive({
-    d <- dstatus()
-    sumdata <- sumdata() 
-    datas <- bicycleTarget(summary=sumdata,status=d,completion=input$num, cost=input$cost)
+    datas <- bicycleTarget(summary= bicycleStatus(eval(parse(text=paste(input$adminLevel)))),status= eval(parse(text=paste(input$adminLevel))),
+                           completion=input$num, cost=input$cost)
     datas
   })
   
@@ -185,19 +171,13 @@ shinyServer(function(input, output, session) {
   
   
   output$description  <- renderText({
-    if(is.null(values$selectedFeature)){
-      d1 <- dstatus()
+    if( is.null(values$selectedFeature)){
+      d1 <- sumdata()
       
       tx <- mean(d1[,c('Total normalised')])
-      #       quintileFunc <- function(x) {
-      #         test <- as.character(cut(x, breaks = c(0, 0.2, 0.4, 0.6, 
-      #                                                0.8, 1), include.lowest = TRUE, labels = c("Bad", 
-      #                                                                                         "Poor", "Moderate", "Good", "High")))
-      #       }
       statusOverall <- quintileFunc(tx)
       mx <- mean(d1[,c('Map Data Quality version norm')])
       dataQualityOverall <- quintileFunc(mx)
-      # x <- mean(d1[,c('Total normalised')])
       textColour <- colourFunc(tx) 
       description <- paste(p("Area: ",tags$span(style="color:#ffffff", "Scotland")),
                            p("Overall Status: ",tags$span(style= textColour, statusOverall, opacity= 0.8)),
@@ -220,16 +200,18 @@ shinyServer(function(input, output, session) {
   
   
   output$rankTable  <- DT::renderDataTable({
-    d <- dstatus()
-    s <- sumdata()
-    s <- s[with(s, order(name)), ]
+    d <- sumdata()
+  #  s <- sumdata()
+   # s <- s[with(s, order(name)), ]
     d <- d[with(d, order(name)), ]
-    d <- cbind(s,d)
+    #d <- cbind(s,d)
     d$commutingbybicycle[d$commutingbybicycle == 0] <- "<1"
     d <- d[with(d, order(Rank)), ]
     rankTable <- d[,c('name','commutingbybicycle','Status','Rank')]
     names(rankTable) <- c('Name','% Commuting by bicycle','Status','Rank')
-    datatable( rankTable ,rownames = FALSE,selection = 'single', options = list(searching = TRUE,paging = FALSE,info = FALSE)) %>% formatStyle(names(rankTable[1:4]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ') 
+    datatable( rankTable ,rownames = FALSE,selection = 'single', 
+               options = list(searching = TRUE,paging = FALSE,info = FALSE)) %>% 
+      formatStyle(names(rankTable[1:4]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ') 
     
   })
   
@@ -249,7 +231,8 @@ shinyServer(function(input, output, session) {
     isolate({
       # A rank tablewas clicked. Save its properties
       # to selectedFeature.
-      data <- dstatus()
+      data <-sumdata()
+      data <- data[with(data,order(Rank)),]
       evt <- data$name[evt]
       values$selectedFeature$name <-  evt
     })
@@ -272,7 +255,7 @@ shinyServer(function(input, output, session) {
   
   output$scotlandDetails <- renderUI({
     if (is.null(values$selectedFeature)){
-      p("Select an area from map or table for more detail")
+      h3("Select an area from map or table for more detail")
     }
   })
   
@@ -284,7 +267,7 @@ shinyServer(function(input, output, session) {
   output$details <- renderText({
     if (is.null(values$selectedFeature)){
       return(NULL)  }
-    d <- dstatus()
+    d <-sumdata()
     s <- sumdata()
     s$'commutingbybicycle'[s$'commutingbybicycle' == 0] <- "<1"
     tx <- d$'Total normalised'[d[,c('name')] == values$selectedFeature$name]
@@ -307,22 +290,12 @@ shinyServer(function(input, output, session) {
     
     return(description)
   })
-  # Render values$selectedFeature, if it isn't NULL.
-  #     if (is.null(values$selectedFeature))
-  #       return(NULL)  
-  #     d <- dstatus()
-  #     as.character(tags$div(
-  #       tags$h3(values$selectedFeature$name),
-  #       tags$h3(
-  #         "Rank:",paste(d$'Rank'[d[,c('name')] == values$selectedFeature$name]," out of ",length(d[,c('name')]))),
-  #       tags$p(paste(d$'Description'[d[,c('name')] == values$selectedFeature$name])),
-  #        actionButton('scotlandOverview', 'Return to Scotland overview')
-  #     ))
+
   
   output$tabs <- renderUI({
     if (!is.null(values$selectedFeature)){
       tabsetPanel(
-        tabPanel("Overall Rating", uiOutput('comparisonTable')),
+        tabPanel("Overall Status", uiOutput('comparisonTable')),
         tabPanel ("Cyclepath", uiOutput('comparisonMetric')), 
         tabPanel("Bicycle parking", uiOutput("comparisonParking")),
         tabPanel("National Cycle Network", uiOutput("comparisonNCN")),
@@ -332,7 +305,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$comparisonStatusTable = DT::renderDataTable({
-    d <- dstatus()
+    d <-sumdata()
     x <- d$'Map Data Quality version norm'[d[,c('name')] == values$selectedFeature$name]
     dataQualityOverall <- data.frame(quintileFunc(x))
     rownames(dataQualityOverall) <- c('Map Data Quality')
@@ -341,10 +314,10 @@ shinyServer(function(input, output, session) {
     dataQualityOverallAmsterdam <- data.frame(quintileFunc(x))
     rownames(dataQualityOverallAmsterdam) <- c('Map Data Quality')
     names( dataQualityOverallAmsterdam) <- c("Key Elements")
-    data3 <- data.frame(t(d[d[,1] == input$areaName,c('Status','Cycle path status','Bicycle parking status','National cycle network status')]))
+    data3 <- data.frame(t(d[d[,'name'] == input$areaName,c('Status','Cycle path status','Bicycle parking status','National cycle network status')]))
     names(data3) <- c("Key Elements")
     data3 <- rbind(data3, dataQualityOverallAmsterdam)
-    data4 <- data.frame(t(d[d[,1] == values$selectedFeature$name,c('Status','Cycle path status','Bicycle parking status','National cycle network status')]))
+    data4 <- data.frame(t(d[d[,'name'] == values$selectedFeature$name,c('Status','Cycle path status','Bicycle parking status','National cycle network status')]))
     names(data4) <- c("Key Elements")
     data4 <- rbind(data4, dataQualityOverall)
     
@@ -354,8 +327,9 @@ shinyServer(function(input, output, session) {
     data[,1] <- as.character(data[,1])
     data[1,1] <- "Overall Status" 
     row.names(data) <- NULL
-    # data <- data.frame("Quality Element"=data[,1],"Value"=data[,2])
-    datatable(data,rownames = FALSE, options = list(searching = FALSE,paging = FALSE,info = FALSE,server = FALSE,processing = FALSE))  %>% formatStyle(names(data[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ' )
+      datatable(data,rownames = FALSE, options = list(searching = FALSE,paging = FALSE,info = FALSE,
+                                                    server = FALSE,processing = FALSE))  %>%
+      formatStyle(names(data[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ' )
     
   })
   
@@ -384,25 +358,18 @@ shinyServer(function(input, output, session) {
     })
   
   output$comparisonTableMetric = DT::renderDataTable({
-    # row_selected = input$comparisonStatusTable_row_last_clicked
     s_d <- sumdata()
-    s_d <- s_d[with(s_d, order(name)), ]
-    d <- dstatus()
-    d <- d[with(d, order(name)), ]
-    s_d <- cbind(s_d,d)
-    # if (length(row_selected)) {
-    
-    metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Cycle path status','cyclepath','road','area')])
+    metricTable <- data.frame(t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Cycle path status','cyclepath','road','area')]))
     col_names <- data.frame(c('Cycle path status','Cylepath (km)','Road (km)','Area (meters)'))  #data.frame(rownames(metricTable)) - need units in dataframe
     metricTable <- cbind(col_names, metricTable)
     areaNames <- c(values$selectedFeature$name, input$areaName)
     areaNames <- areaNames[order(areaNames)]
     names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
-    
-    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
-    # return(table_sum)
-    # }
-  })
+    row.names(metricTable) <- NULL
+      datatable(metricTable,rownames = FALSE,    
+                            options = list(searching = FALSE,paging = FALSE,info = FALSE,server = FALSE,processing = FALSE))  %>% 
+                  formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    })
   
   
   output$comparisonParking <- renderUI({
@@ -414,24 +381,17 @@ shinyServer(function(input, output, session) {
     })
   
   output$comparisonTableParking = DT::renderDataTable({
-    # row_selected = input$comparisonStatusTable_row_last_clicked
+   
     s_d <- sumdata()
-    s_d <- s_d[with(s_d, order(name)), ]
-    d <- dstatus()
-    d <- d[with(d, order(name)), ]
-    s_d <- cbind(s_d,d)
-    # if (length(row_selected)) {
-    
     metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Bicycle parking status','bicycleparking','area','area to bicycle parking ratio norm')])
     col_names <- data.frame(c('Bicycle parking status','No. bicyle parking points','Area (meters)','area to bicycle parking ratio normalised'))  #data.frame(rownames(metricTable)) - need units in dataframe
     metricTable <- cbind(col_names, metricTable)
     areaNames <- c(values$selectedFeature$name, input$areaName)
     areaNames <- areaNames[order(areaNames)]
     names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
-    
-    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
-    # return(table_sum)
-    # }
+    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', 
+                           options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% 
+      formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
   })
   
   output$comparisonNCN <- renderUI({
@@ -444,25 +404,18 @@ shinyServer(function(input, output, session) {
     })
   
   output$comparisonTableNCN = DT::renderDataTable({
-    # row_selected = input$comparisonStatusTable_row_last_clicked
-    s_d <- sumdata()
-    s_d <- s_d[with(s_d, order(name)), ]
-    d <- dstatus()
-    d <- d[with(d, order(name)), ]
-    s_d <- cbind(s_d,d)
-    # if (length(row_selected)) {
     
+    s_d <- sumdata()
     metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('National cycle network status','routes','road','cycle route to road ratio norm')])
     col_names <- data.frame(c('National cycle network status','Length of NCN (km)','Road (km)','cycle route to road ratio normalised'))  #data.frame(rownames(metricTable)) - need units in dataframe
     metricTable <- cbind(col_names, metricTable)
     areaNames <- c(values$selectedFeature$name, input$areaName)
     areaNames <- areaNames[order(areaNames)]
     names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
-    
-    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
-    # return(table_sum)
-    # }
-  })
+        table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', 
+                               options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% 
+          formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+     })
   
   output$comparisonMap <- renderUI({
     if (!is.null(values$selectedFeature)){
@@ -474,13 +427,7 @@ shinyServer(function(input, output, session) {
     })
   
   output$comparisonTableMap = DT::renderDataTable({
-    # row_selected = input$comparisonStatusTable_row_last_clicked
-    s_d <- sumdata()
-    s_d <- s_d[with(s_d, order(name)), ]
-    d <- dstatus()
-    d <- d[with(d, order(name)), ]
-    s_d <- cbind(s_d,d)
-    # if (length(row_selected)) {
+     s_d <- sumdata()
     s_d$'Map Data Quality' <- quintileFunc(s_d$'Map Data Quality version norm')
     s_d$'lasteditdate' <- as.Date(s_d$'lasteditdate')
     metricTable <- t(s_d[s_d$name == values$selectedFeature$name | s_d$name == input$areaName ,c('Map Data Quality','editors','version','lasteditdate')])
@@ -490,10 +437,10 @@ shinyServer(function(input, output, session) {
     areaNames <- areaNames[order(areaNames)]
     names(metricTable) <- c('Sub elements',areaNames[1], areaNames[2])
     
-    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
-    # return(table_sum)
-    # }
-  })
+    table_sum <- datatable(metricTable,rownames = FALSE,selection = 'none', style= 'default', 
+                           options = list(processing = FALSE, searching = FALSE,paging = FALSE,info = FALSE))  %>% 
+      formatStyle(names(metricTable[1:3]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    })
   
   # out use dimple library: doesn't render correctly:
   #   output$chart2 <- renderChart2({
@@ -512,7 +459,7 @@ shinyServer(function(input, output, session) {
   #   })
   
   output$chart2 <- renderPlot({
-    d <- dstatus()
+    d <-sumdata()
     d <- d[d[,1] == values$selectedFeature$name | d[,1] == input$areaName, ]
     
     ifelse(is.null(values$selectedFeature$name), p2 <- NULL,
@@ -530,24 +477,28 @@ shinyServer(function(input, output, session) {
   
   output$descriptionCosts  <- renderText({
     
-    description2 <- paste("Based on the values set above, the total cost of improving cycle infrastructure in Scotland to Good status is £ ", datasetTargetTotal()," Million per year. This includes a 'rural bias' which is a reduction in cost for rural areas which require less cyclepaths due to generally quieter roads and lower population density.",sep="") 
+    description2 <- paste("Based on the values set above, 
+                          the total cost of improving cycle infrastructure in Scotland to Good status is:",
+                          p(h3('£', datasetTargetTotal(), " Million per year")),p("This includes a 'rural bias' which is a reduction in cost for rural areas which require less cyclepaths
+                          due to generally quieter roads and lower population density."),sep="") 
     description2 
   })
   
   output$tableCosts <- DT::renderDataTable({
     datas <-  datasetTarget() 
     datas$Code <- NULL
-    datatable(datas, rownames = FALSE,selection = 'none', style= 'default', options = list(searching = TRUE,paging = FALSE,info = FALSE))  %>% formatStyle(names(datas[1:5]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
+    datatable(datas, rownames = FALSE,selection = 'none', style= 'default', options = list(searching = TRUE,paging = FALSE,info = FALSE))  %>% 
+      formatStyle(names(datas[1:5]),  color = 'white',backgroundColor = '#303030 ',borderColor = '#404040 ')
   }  )
   
   output$measuresTable <- renderDataTable({
-    sumdata <- sumdata() 
+    sumdata <- eval(parse(text=paste(input$adminLevel)))
     data <- bicycleMeasures(sumdata)
     data
   },options = list(searching = TRUE,paging = FALSE))
   
   output$chartOutcome <- renderPlot({
-    d <- dstatus()  
+    d <-sumdata()  
     sumdata <- sumdata()
     d$'Name' <- d$name
     d <-   merge(d,sumdata,by.x="name",by.y="name")
@@ -584,11 +535,4 @@ shinyServer(function(input, output, session) {
   
   
     })
-
-
-
-
-
-
-
 

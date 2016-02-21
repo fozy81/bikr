@@ -63,7 +63,7 @@ system("rm -r /home/tim/R/postGISupdate")
 library(RPostgreSQL)
 dbname <- "gis2"
 user <- "tim"
-password <- "postgres"
+password <- "osm"
 password <- scan("/home/tim/Documents/key/Untitled Document 1.pgpass", what="")
 host <- "localhost"
 con <- dbConnect(dbDriver("PostgreSQL"), user="username",
@@ -127,32 +127,37 @@ where planet_osm_polygon.amenity = 'bicycle_parking'"))
 dbSendQuery(con,paste("update bicycle_parking set way = ST_Centroid(way)"))           
  dbSendQuery(con,paste("ALTER TABLE bicycle_parking ADD COLUMN cap NUMERIC"))      
 
+ ###  install refernce areas shapefile with areas and columns setup:
+ 
+ # shp2pgsql -s 4326 ~/Dropbox/bikr/merged3.shp merged | psql -h localhost -d gis2 -U tim
+ 
 #### Areas update ####
 
   ### Just some queries I've used in testing, handy for reference:
-  
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN version NUMERIC"))
-dbSendQuery(con,paste("update merged SET commuting_by_bicycle = 42 WHERE commuting_by_bicycle IS NULL"))
-dbSendQuery(con,paste("update merged SET commuting_by_bicycle = CAST (census.bikers as NUMERIC) FROM census WHERE census.name = merged.name"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN commuting_by_bicycle NUMERIC"))
-dbSendQuery(con,paste("update merged SET code = 0 WHERE code IS NULL"))
-dbSendQuery(con,paste("UPDATE merged SET name = 'Stadsregio Amsterdam' WHERE name = ''"))
-dbGetQuery(con,paste("update merged SET name = area10.name FROM area10 WHERE area10.code = merged.code"))
-dbGetQuery(con,paste("update merged set name = left(name, -8)"))
-dbSendQuery(con,paste("alter table merged ADD column proposed_highways NUMERIC"))
-dbSendQuery(con,paste("alter table merged ADD column construction_highways NUMERIC"))
-dbSendQuery(con,paste("alter table merged drop column edit_date"))
-dbSendQuery(con,paste("alter table merged add column edit_date DATE"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN editors NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN proposed_off_road_cycleway NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN construction_off_road_cycleway NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN proposed_NCN NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN off_road_cycleway NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN highways NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN NCN NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN cycleway_v_highway NUMERIC"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN bicycle_parking INTEGER"))
-dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN area NUMERIC"))
+  # 
+
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN version NUMERIC"))
+# dbSendQuery(con,paste("update merged SET commuting_by_bicycle = 42 WHERE commuting_by_bicycle IS NULL"))
+# dbSendQuery(con,paste("update merged SET commuting_by_bicycle = CAST (census.bikers as NUMERIC) FROM census WHERE census.name = merged.name"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN commuting_by_bicycle NUMERIC"))
+# dbSendQuery(con,paste("update merged SET code = 0 WHERE code IS NULL"))
+# dbSendQuery(con,paste("UPDATE merged SET name = 'Stadsregio Amsterdam' WHERE name = ''"))
+# dbGetQuery(con,paste("update merged SET name = area10.name FROM area10 WHERE area10.code = merged.code"))
+# dbGetQuery(con,paste("update merged set name = left(name, -8)"))
+# dbSendQuery(con,paste("alter table merged ADD column proposed_highways NUMERIC"))
+# dbSendQuery(con,paste("alter table merged ADD column construction_highways NUMERIC"))
+# dbSendQuery(con,paste("alter table merged drop column edit_date"))
+# dbSendQuery(con,paste("alter table merged add column edit_date DATE"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN editors NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN proposed_off_road_cycleway NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN construction_off_road_cycleway NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN proposed_NCN NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN off_road_cycleway NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN highways NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN NCN NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN cycleway_v_highway NUMERIC"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN bicycle_parking INTEGER"))
+# dbSendQuery(con,paste("ALTER TABLE merged ADD COLUMN area NUMERIC"))
 
 ######### Polygon file called 'merged' contains the areas of interest i.e. a
 ######### postgis table on your database of the areas you are interested to
@@ -264,15 +269,18 @@ dbSendQuery(con,paste("UPDATE merged SET area = (SELECT ST_Area(ST_Transform(mer
 # bicycle parking
 # get median bicycle capacity value
   
-bicycle<-  dbGetQuery(con,paste("SELECT *
+bicycle <-  dbGetQuery(con,paste("SELECT *
                                      FROM bicycle_parking
                                                  "))
 
 
-bicycle$capacity <- as.numeric(capacityValues$capacity)
+#bicycle$capacity <- as.numeric(capacityValues$capacity)
+
+bicycle$capacity <- gsub("[+]","", bicycle$capacity)
 bicycleMedian <- median(bicycle$capacity, na.rm=T)
 
-bicycle$capacity[is.na(capacityValues$capacity)] <- bicycleMedian
+bicycle$capacity[is.na(bicycle$capacity)] <- bicycleMedian
+bicycle$cap <- bicycle$capacity
 dbWriteTable(conn=con,  name = 'bicycle', value=bicycle, overwrite=T)
 dbSendQuery(con,paste("update bicycle_parking SET cap = CAST (bicycle.capacity as NUMERIC) FROM bicycle WHERE bicycle.osm_id = bicycle_parking.osm_id"))
 
@@ -291,10 +299,13 @@ dbSendQuery(con,paste("UPDATE merged SET bicycle_pa = 0 WHERE bicycle_pa IS NULL
   FROM planet_osm_line r
   WHERE ST_Intersects(merged.way, r.way) AND 
 (r.highway = 'cycleway' AND r.surface NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips')
-OR (r.highway='bridleway' AND r.surface NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips') OR (r.highway = 'path' AND r.bicycle in ('yes','designated') AND r.surface 
+OR (r.highway='bridleway' AND r.surface NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips') 
+OR (r.highway = 'path' AND r.bicycle in ('yes','designated') AND r.surface 
 NOT IN ('unpaved','gravel','dirt','grass','mud','earth','fine_gravel','ground','pebblestone','salt','sand','snow','woodchips')
 OR (r.highway='pedestrian' AND r.bicycle in ('yes','designated') OR (r.highway='cycleway' and r.surface IS NULL)
-)))))
+)
+)))
+)
 ",sep=""))
 
 dbSendQuery(con,paste("UPDATE merged SET off_road_c = 0 WHERE off_road_c IS NULL"))
@@ -323,24 +334,36 @@ NOT r.highway = 'service')"))
   
 dbSendQuery(con,paste("UPDATE merged SET highways = 0 WHERE highways IS NULL"))
 
+# dbGetQuery(con,paste("UPDATE merged SET highways = ( SELECT
+#  sum(ST_Length(ST_Transform(r.way,4326)::geography))/1000
+#   FROM planet_osm_line r
+#   WHERE ST_Contains(merged.way,r.way) AND r.highway is not null AND
+# NOT r.highway = 'track' AND NOT r.highway = 'cycleway' AND
+# NOT r.highway = 'path' AND NOT r.highway = 'bridleway' AND 
+# NOT r.highway = 'footway' AND NOT r.highway = 'steps' AND
+# NOT r.highway = 'raceway' AND NOT r.highway = 'pedestrian' AND
+# NOT r.highway = 'service')"))
+# 
+# dbSendQuery(con,paste("UPDATE merged SET highways = 0 WHERE highways IS NULL"))
+
 ## save file query outputs into R package as demo data:
 ### splits into three files - Parliamentary areas, council area and all areas -
 ### not quite sure the best approach - could just be a single file
-system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json"))      
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326",sep="")
+system(paste("rm /home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandAmsterdam.json"))      
+command <- paste("ogr2ogr -f geoJSON /home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandAmsterdam.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:3857 -t_srs EPSG:4326",sep="")
 system(command)
 
-system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandMsp.json"))  
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandMsp.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326 -where \"area_code IN ('COU','CIT')\" ",sep="")
+system(paste("rm /home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json"))  
+command <- paste("ogr2ogr -f geoJSON /home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:3857 -t_srs EPSG:4326  -where \"area_code IN ('COU','CIT')\" ",sep="")
 system(command)
 
-system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandCouncil.json"))  
-command <- paste("ogr2ogr -f geoJSON /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandCouncil.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:900913 -t_srs EPSG:4326 -where \"area_code IN ('UTA','CIT')\" ",sep="")
+system(paste("rm /home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandCouncil.json"))  
+command <- paste("ogr2ogr -f geoJSON /home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandCouncil.json PG:\"host=localhost dbname=gis2 user=tim password=",password," port=5432\"  merged -lco COORDINATE_PRECISION=4 -simplify 61 -nlt MULTIPOLYGON -s_srs EPSG:3857 -t_srs EPSG:4326 -where \"area_code IN ('UTA','CIT')\" ",sep="")
 system(command)
 # save RData object into package
 library(jsonlite)
-d <- data.frame(jsonlite::fromJSON('/home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json',flatten=T))
-system(paste("rm /home/tim/github/mypackage/examples/shiny-examples/bikrApp/scotlandAmsterdam.json"))  
+d <- data.frame(jsonlite::fromJSON('/home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandAmsterdam.json',flatten=T))
+system(paste("rm /home/tim/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandAmsterdam.json"))  
 scotlandMsp <- d[d$features.properties.area_code == "COU" | d$features.properties.area_code == "CIT",c(5:6,7:21),]
 scotlandCouncil <- d[d$features.properties.area_code  == "UTA" | d$features.properties.area_code  == "CIT",c(5:6,7:21),]
 d2 <- d[d$features.properties.area_code  == "UTA" | d$features.properties.area_code  == "CIT" | d$features.properties.area_code  == "COU",c(5:6,7:21),]
@@ -352,38 +375,38 @@ save(scotlandMsp,file="data/scotlandMsp.RData",compress='xz')
 save(scotlandCouncil,file="data/scotlandCouncil.RData",compress='xz') 
 save(scotlandAmsterdam,file="data/scotlandAmsterdam.RData",compress='xz') 
 
-
-library(bikr)
-library(RJSONIO)
-
-d1 <- bicycleStatus(scotlandMsp)
-d1$fillcolor <- ifelse(d1$Status == "High","#ffffb2","")
-d1$fillcolor <- ifelse(d1$Status == "Good","#fecc5c",d1$fillcolor)
-d1$fillcolor <- ifelse(d1$Status == "Moderate","#fd8d3c",d1$fillcolor)
-d1$fillcolor <- ifelse(d1$Status == "Poor","#f03b20",d1$fillcolor)
-d1$fillcolor <- ifelse(d1$Status == "Bad","#bd0026",d1$fillcolor)
-
-e1 <- bicycleStatus(scotlandCouncil)
-e1$fillcolor <- ifelse(e1$Status == "High","#ffffb2","")
-e1$fillcolor <- ifelse(e1$Status == "Good","#fecc5c",e1$fillcolor)
-e1$fillcolor <- ifelse(e1$Status == "Moderate","#fd8d3c",e1$fillcolor)
-e1$fillcolor <- ifelse(e1$Status == "Poor","#f03b20",e1$fillcolor)
-e1$fillcolor <- ifelse(e1$Status == "Bad","#bd0026",e1$fillcolor)
-
-f <- '~/Documents/github/R/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json'
-con = file(f,"r")
-geojson <- RJSONIO::fromJSON('~/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json')
-geojson <- RJSONIO::fromJSON('~/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandCouncil.json')
-
-d2 <- RJSONIO::fromJSON('scotlandCouncil.json')
-    
-
-d <- e1
-for (i in 1:length(d[,1])){
-  
-  geojson$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
-                                                    fill = "true", opacity = 0.9,
-                                                    fillOpacity = 0.9, color= paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]),
-                                                    fillColor = paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]))
-
-}
+# 
+# library(bikr)
+# library(RJSONIO)
+# 
+# d1 <- bicycleStatus(scotlandMsp)
+# d1$fillcolor <- ifelse(d1$Status == "High","#ffffb2","")
+# d1$fillcolor <- ifelse(d1$Status == "Good","#fecc5c",d1$fillcolor)
+# d1$fillcolor <- ifelse(d1$Status == "Moderate","#fd8d3c",d1$fillcolor)
+# d1$fillcolor <- ifelse(d1$Status == "Poor","#f03b20",d1$fillcolor)
+# d1$fillcolor <- ifelse(d1$Status == "Bad","#bd0026",d1$fillcolor)
+# 
+# e1 <- bicycleStatus(scotlandCouncil)
+# e1$fillcolor <- ifelse(e1$Status == "High","#ffffb2","")
+# e1$fillcolor <- ifelse(e1$Status == "Good","#fecc5c",e1$fillcolor)
+# e1$fillcolor <- ifelse(e1$Status == "Moderate","#fd8d3c",e1$fillcolor)
+# e1$fillcolor <- ifelse(e1$Status == "Poor","#f03b20",e1$fillcolor)
+# e1$fillcolor <- ifelse(e1$Status == "Bad","#bd0026",e1$fillcolor)
+# 
+# f <- '~/Documents/github/R/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json'
+# con = file(f,"r")
+# geojson <- RJSONIO::fromJSON('~/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandMsp.json')
+# geojson <- RJSONIO::fromJSON('~/Documents/github/bikr/examples/shiny-examples/bikrApp/scotlandCouncil.json')
+# 
+# d2 <- RJSONIO::fromJSON('scotlandCouncil.json')
+#     
+# 
+# d <- e1
+# for (i in 1:length(d[,1])){
+#   
+#   geojson$features[[i]]$properties$style   <-  list(weight = 5, stroke = "true",
+#                                                     fill = "true", opacity = 0.9,
+#                                                     fillOpacity = 0.9, color= paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]),
+#                                                     fillColor = paste(d$fillcolor[d$name == geojson$features[[i]]$properties$name]))
+# 
+# }
