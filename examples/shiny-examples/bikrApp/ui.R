@@ -2,11 +2,13 @@ library(leaflet)
 library(rCharts)
 
 
+
 shinyUI(
   navbarPage( theme = "bootstrap.min.css",
               title = 'Rate bicycle infrastructure in your area!',
               tabPanel('Ranking', 
-                       fluidRow(column(5, htmlOutput("description"),   htmlOutput('details')),
+                       fluidRow(column(5,  tags$style(HTML("body { background-image: url('pop14.jpg');  background-size: 1800px; }")), 
+                                       htmlOutput("description"),   htmlOutput('details')),
                                 column(7, wellPanel(uiOutput('pleaseClick'),
                                                     leafletOutput("map"))),
                                 
@@ -31,7 +33,7 @@ shinyUI(
                                                                 or in other words 'Good' status according to this classification scheme. 
                                                                 By altering the values selected below, you can control how quickly you wish
                                                                 to reach 'Good status' and set a default for the average cost of creating
-                                                                cycle path per km. These values determine the 'Projected Cost per year in GBP'.")),
+                                                                cycle path per km. These values determine the 'Projected Cost per year in GBP'.",align = "justify")),
                                                       
                                                      column(6,numericInput("num", 
                                                                    label = p("Set the number of years to reach objective:"), 
@@ -55,15 +57,16 @@ shinyUI(
       #                              dataTableOutput('sandboxTable')))),
 #tabPanel("Scenario Planning", fluidRow(column(7, "This page is still in development. It's hoped it will highlight areas of the most benefit to improve")))))
 
-tabPanel("About", fluidRow(column(7, h4("This site uses bicycle infrastructure data from",
+tabPanel("About", fluidRow(column(8, h4("This site uses bicycle infrastructure data from",
                                         tags$a(href="http://www.openstreetmap.org/#map=10/55.9496/-3.8809&layers=C","OpenStreetMap"),
                                         "to classify the level of provision in a given area. The classification is created by standardising 
-                                        against data from Amsterdam region as a reference condition of 'High' status. The development of 
-                                        this website started at", tags$a(href="http://www.cyclehack.com/catalogue/veloscapr/", "Cyclehack Glasgow"),
-                                        "with contributions from Joel, Neil & Sunil"),
+                                        against data from Amsterdam region as a reference condition of 'High' status. Please take these figures
+                                      with a pitch of salt - we are only just getting started. The development of this website started at",
+                                        tags$a(href="http://www.cyclehack.com/catalogue/veloscapr/", "Cyclehack Glasgow"),
+                                        "with contributions from Joel, Neil & Sunil.",align = "justify"),
                                     h4("Find out more, get the data and contribute to the project", 
-                                       tags$a(href="https://github.com/fozy81/bikr","here")), h4("Contact us on twitter ", 
-                                                                                          tags$a(href="https://twitter.com/fozy81","here"))
+                                       tags$a(href="https://github.com/fozy81/bikr","here.")), h4("Contact us on twitter ", 
+                                                                                          tags$a(href="https://twitter.com/fozy81","here."))
                                   )))
 
 

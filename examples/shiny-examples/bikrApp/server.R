@@ -70,7 +70,7 @@ shinyServer(function(input, output, session) {
     
     geojson <- geojsondata()
     Areas <- geojson 
-    d <-sumdata()
+    d <- sumdata()
     col_areas = factor(c("High","Good","Moderate","Poor","Bad"),levels = c("High","Good","Moderate","Poor","Bad"),ordered=TRUE)
     pal <- colorFactor(c("#ffffb2","#fecc5c","#fd8d3c","#f03b20","#bd0026"),levels =  col_areas ,ordered=TRUE)
     for (i in 1:length(d[,1])){
@@ -340,7 +340,7 @@ shinyServer(function(input, output, session) {
            h4("The overall status is calculated by combining all sub elements excluding the map quality element. The 
               elements are all normalised against the amount of infrastructure found in the Amsterdam region. Some allowances are
               made for rural areas and a weighting is used to balance in favour of total Cycle Path element. See the other tabs for further 
-              information on how each individual element is calculated" ))
+              information on how each individual element is calculated",align = "justify" ))
     }
     })
   
@@ -353,7 +353,7 @@ shinyServer(function(input, output, session) {
                                                             road therefore road density (road/area) is used to biase in favour of 
                                                             rural areas. Cycle paths are defined as paths separated from traffic, with a paved surface which may or may not be shared
                                                             with pedestrians. Roads are defined as any paved road with vehicle access exlcuding
-                                                            'service' roads such as car park aisles or driveways."))
+                                                            'service' roads such as car park aisles or driveways.",align = "justify"))
     }
     })
   
@@ -376,7 +376,7 @@ shinyServer(function(input, output, session) {
     if (!is.null(values$selectedFeature)){
       
       list( DT::dataTableOutput('comparisonTableParking'),h4("The bicycle parking status is calculated based on the ratio
-                                                             of bicycle parking points divided by area."))
+                                                             of bicycle parking points divided by area.",align = "justify"))
     }
     })
   
@@ -422,7 +422,7 @@ shinyServer(function(input, output, session) {
       
       list( DT::dataTableOutput('comparisonTableMap'),h4("The map quality status is calculated based on the number of OpenStreetMap editors, 
                                                          the date of last edit, and the average number of updates made to bicycle infrastructure features. Allowances are made for area size and ruralness. The
-                                                         value is then normalised against Amsterdam region"))
+                                                         value is then normalised against Amsterdam region",align = "justify"))
     }
     })
   
@@ -480,7 +480,7 @@ shinyServer(function(input, output, session) {
     description2 <- paste("Based on the values set above, 
                           the total cost of improving cycle infrastructure in Scotland to Good status is:",
                           p(h3('£', datasetTargetTotal(), " Million per year")),p("This includes a 'rural bias' which is a reduction in cost for rural areas which require less cyclepaths
-                          due to generally quieter roads and lower population density."),sep="") 
+                          due to generally quieter roads and lower population density.",align = "justify"),sep="") 
     description2 
   })
   
@@ -507,7 +507,9 @@ shinyServer(function(input, output, session) {
     d$name <- as.factor(d$name)
     d$name <- factor(d$name, levels = d$name[order(d$'Total normalised')])
     Overall_Status <- d$'Status'
-    p2 <-  qplot(x = d$name,  y= d$'% Commuting By Bicycle', geom="bar",fill=Overall_Status, stat="identity",xlab="Area",ylab="Percentage communting by bicycle") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    p2 <-  qplot(x = d$name,  y= d$'% Commuting By Bicycle', geom="bar",fill=Overall_Status, 
+                 stat="identity",xlab="Area",
+                 ylab="Percentage communting by bicycle") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
     
     
     # renderChart... dimple etc
@@ -525,7 +527,9 @@ shinyServer(function(input, output, session) {
   
   
   sandboxData <- reactive({
-    return(bicycleStatus(sumdata(),bicycleParkingWeight=input$bicyleParkingWeight,routeWeight=input$routeWeight,cyclePathWeight=input$bicyclePathWeight,ruralWeight=input$ruralWeight))
+    return(bicycleStatus(sumdata(),
+                         bicycleParkingWeight=input$bicyleParkingWeight,routeWeight=input$routeWeight,
+                         cyclePathWeight=input$bicyclePathWeight,ruralWeight=input$ruralWeight))
   })
   
   output$sandboxTable <- renderDataTable({

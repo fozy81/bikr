@@ -1,6 +1,6 @@
 name: shinyapp
 account: opendata
 server: shinyapps.io
-bundleId: 368738
+bundleId: 377018
 url: https://opendata.shinyapps.io/shinyapp/
-when: 1454960293.89468
+when: 1456077580.90076
